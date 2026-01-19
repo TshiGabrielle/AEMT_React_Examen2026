@@ -1,95 +1,141 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:8080/api/notes";
+const API = "http://localhost:8080/api/notes";
+
+/* ===== Types ===== */
+
+type NoteListItem = {
+  id: number;
+  name: string;
+};
+
+type Note = {
+  id: number;
+  name: string;
+  content_markdown: string;
+};
+
+/* ===== App ===== */
 
 function App() {
-  const [id, setId] = useState<number>(0);
-  const [name, setName] = useState("");
-  const [content, setContent] = useState("");
+  const [notes, setNotes] = useState<NoteListItem[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
 
-  // CREATE
+  /* -------- Charger la liste -------- */
+  const loadNotes = () => {
+    fetch(API)
+      .then(res => res.json())
+      .then(data => setNotes(data));
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, []);
+
+  /* -------- Charger une note -------- */
+  const loadNote = (id: number) => {
+    fetch(`${API}/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        setSelectedNote(data);
+        setNewTitle(data.name);
+        setNewContent(data.content_markdown);
+      });
+  };
+
+  /* -------- Créer une note -------- */
   const createNote = async () => {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: name,
-        content_markdown: content,
-        idFolder: 0
-      })
-    });
+  const response = await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: "Nouvelle note",
+      content_markdown: "",
+      idFolder: 0
+    })
+  });
 
-    const data = await res.json();
-    alert("Note créée avec l'id : " + data.id);
-    setId(data.id);
-  };
+  console.log("Status:", response.status);
 
-  // GET
-  const getNote = async () => {
-    const res = await fetch(`${API_URL}/${id}`);
-    if (!res.ok) {
-      alert("Note introuvable");
-      return;
-    }
-    const data = await res.json();
-    setName(data.name);
-    setContent(data.content_markdown);
-  };
+  loadNotes();
+};
 
-  // UPDATE
+
+  /* -------- Modifier une note -------- */
   const updateNote = async () => {
-    await fetch(`${API_URL}/${id}`, {
+    if (!selectedNote) return;
+
+    await fetch(`${API}/${selectedNote.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: name,
-        contentMarkdown: content
+        name: newTitle,
+        contentMarkdown: newContent
       })
     });
-    alert("Note modifiée");
+
+    loadNotes();
   };
 
-  // DELETE
+  /* -------- Supprimer une note -------- */
   const deleteNote = async () => {
-    await fetch(`${API_URL}/${id}`, {
+    if (!selectedNote) return;
+
+    await fetch(`${API}/${selectedNote.id}`, {
       method: "DELETE"
     });
-    alert("Note supprimée");
-    setName("");
-    setContent("");
+
+    setSelectedNote(null);
+    loadNotes();
   };
 
   return (
     <div className="container">
-      <h1>🦇 Spooky Notes</h1>
 
-      <input
-        type="number"
-        placeholder="ID de la note"
-        value={id}
-        onChange={e => setId(Number(e.target.value))}
-      />
+      {/* ===== COLONNE GAUCHE ===== */}
+      <div className="sidebar">
+        <h3>Notes</h3>
 
-      <input
-        type="text"
-        placeholder="Nom de la note"
-        value={name}
-        onChange={e => setName(e.target.value)}
-      />
+        <button onClick={createNote}>➕ Nouvelle note</button>
 
-      <textarea
-        placeholder="Contenu markdown"
-        value={content}
-        onChange={e => setContent(e.target.value)}
-      />
-
-      <div className="buttons">
-        <button onClick={createNote}>Créer</button>
-        <button onClick={getNote}>Charger</button>
-        <button onClick={updateNote}>Modifier</button>
-        <button onClick={deleteNote}>Supprimer</button>
+        {notes.map(note => (
+          <div
+            key={note.id}
+            className="note-item"
+            onClick={() => loadNote(note.id)}
+          >
+            {note.name}
+          </div>
+        ))}
       </div>
+
+      {/* ===== COLONNE DROITE ===== */}
+      <div className="content">
+        {selectedNote ? (
+          <>
+            <input
+              value={newTitle}
+              onChange={e => setNewTitle(e.target.value)}
+            />
+
+            <textarea
+              value={newContent}
+              onChange={e => setNewContent(e.target.value)}
+            />
+
+            <div className="actions">
+              <button onClick={updateNote}>💾 Enregistrer</button>
+              <button onClick={deleteNote}>🗑 Supprimer</button>
+            </div>
+          </>
+        ) : (
+          <p>Sélectionne une note à gauche</p>
+        )}
+      </div>
+
     </div>
   );
 }
