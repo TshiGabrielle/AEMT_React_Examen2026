@@ -139,15 +139,14 @@ export function useNotes() {
         throw new Error('Utilisateur non connecté');
       }
 
-      await fetch(`${API}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name,
-          contentMarkdown: content,
-          userId: userId
-        })
-      });
+    await fetch(`${API}/${id}?userId=${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: name,
+        contentMarkdown: content
+      })
+    });
 
 
       // rafraîchir la liste et recharger la note
