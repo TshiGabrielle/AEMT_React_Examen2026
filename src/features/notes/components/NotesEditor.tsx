@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -19,30 +19,14 @@ function MarkdownHelp({ onClose }: { onClose: () => void }) {
       <div className="markdown-help-window">
         <h2>📘 Aide Markdown</h2>
 
-        <p>Voici les bases du Markdown :</p>
-
         <ul>
-          <li><code>#</code> Titre → <strong>H1</strong></li>
-          <li><code>##</code> Sous‑titre → <strong>H2</strong></li>
-          <li><code>**gras**</code> → texte en gras</li>
-          <li><code>*italique*</code> → texte en italique</li>
-          <li><code>- élément</code> → liste à puces</li>
-          <li><code>1. élément</code> → liste numérotée</li>
-          <li><code>https://lien.com</code> → lien cliquable</li>
-          <li><code>`code`</code> → code inline</li>
-          <li><code>```js ... ```</code> → bloc de code</li>
+          <li># Titre</li>
+          <li>## Sous‑titre</li>
+          <li>**Gras**, *Italique*</li>
+          <li>- Liste</li>
+          <li>`Code inline`</li>
+          <li>```js ... ``` Bloc de code</li>
         </ul>
-
-        <p>Exemple :</p>
-        <pre>
-{`# Titre principal
-## Sous-titre
-- Élément
-**Texte en gras**
-https://example.com
-\`Code inline\`
-`}
-        </pre>
 
         <button className="btn-close" onClick={onClose}>
           Fermer
@@ -60,7 +44,28 @@ export function NotesEditor({
   onContentChange,
   onSave
 }: Props) {
+
+  const [stats, setStats] = useState({
+    chars: 0,
+    words: 0,
+    lines: 0,
+    bytes: 0
+  });
+
   const [showHelp, setShowHelp] = useState(false);
+
+  function computeStats(text: string) {
+    const chars = text.length;
+    const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+    const lines = text === "" ? 0 : text.split("\n").length;
+    const bytes = new Blob([text]).size;
+
+    setStats({ chars, words, lines, bytes });
+  }
+
+  useEffect(() => {
+    computeStats(content);
+  }, [content]);
 
   const allowed = [
     "p",
@@ -81,6 +86,8 @@ export function NotesEditor({
 
   return (
     <main className="editor">
+
+      {/* Toolbar */}
       <div className="editor-toolbar">
         <input
           type="text"
@@ -95,32 +102,52 @@ export function NotesEditor({
           ❓ Markdown
         </button>
 
-        <button onClick={onSave} className="btn-save">
+        <button className="btn-save" onClick={onSave}>
           💾 Enregistrer
         </button>
       </div>
 
-      <div className="editor-content">
-        {isEditMode ? (
+      {/* ZONE PRINCIPALE */}
+      <div className="editor-content" style={{ display: "flex" }}>
+
+        {/* MODE ÉCRITURE = textarea + preview */}
+        {isEditMode && (
           <textarea
             value={content}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              onContentChange(e.target.value)
-            }
+            onChange={(e) => {
+              onContentChange(e.target.value);
+              computeStats(e.target.value);
+            }}
             className="markdown-input"
             placeholder="Écrivez en Markdown..."
+            style={{ width: "50%" }}
           />
-        ) : (
-          <div className="markdown-preview">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSanitize]}
-              allowedElements={allowed}
-            >
-              {content}
-            </ReactMarkdown>
-          </div>
         )}
+
+        {/* APERCU HTML LIVE (toujours visible) */}
+        <div
+          className="markdown-preview"
+          style={{
+            width: isEditMode ? "50%" : "100%",
+            borderLeft: "2px solid #ff8c00"
+          }}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
+            allowedElements={allowed}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
+      </div>
+
+      {/* Panneau métadonnées */}
+      <div className="metadata-panel">
+        <p><strong>Lignes :</strong> {stats.lines}</p>
+        <p><strong>Mots :</strong> {stats.words}</p>
+        <p><strong>Caractères :</strong> {stats.chars}</p>
+        <p><strong>Taille :</strong> {stats.bytes} octets</p>
       </div>
 
       {showHelp && <MarkdownHelp onClose={() => setShowHelp(false)} />}
