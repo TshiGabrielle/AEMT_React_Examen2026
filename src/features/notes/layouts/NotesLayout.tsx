@@ -4,6 +4,8 @@ import { useFolders } from '../../../services/FoldersService.js';
 import { NotesSidebar } from '../components/NotesSidebar.js';
 import { NotesEditor } from '../components/NotesEditor.js';
 import { EmptyState } from '../components/EmptyState.js';
+import { useNavigate } from 'react-router-dom';
+import { AuthService } from '../../../services/AuthService.js';
 
 export function NotesLayout() {
   const {
@@ -26,6 +28,8 @@ export function NotesLayout() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (selectedNote) {
@@ -67,15 +71,57 @@ export function NotesLayout() {
     }
   };
 
+    function handleLogout() {
+    AuthService.logout();
+    navigate('/auth/login');
+  }
+
   return (
     <div className="app">
-      <header className="header">
-        <h1>🎃 Spooky Notes</h1>
-        <div className="mode-toggle">
-          <button className={isEditMode ? 'active' : ''} onClick={() => setIsEditMode(true)}>✏️</button>
-          <button className={!isEditMode ? 'active' : ''} onClick={() => setIsEditMode(false)}>👁️</button>
+      <header className="header" style={{ display: 'flex', alignItems: 'center' }}>
+        
+        {/* Gauche : déconnexion */}
+        <div style={{ width: '120px' }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: '#b00020',
+              color: 'white',
+              border: 'none',
+              padding: '0.4rem 0.7rem',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Déconnexion
+          </button>
         </div>
+
+        {/* Centre : titre */}
+        <h1 style={{ margin: 0, textAlign: 'center', flex: 1 }}>
+          🎃 Spooky Notes
+        </h1>
+
+        {/* Droite : modes */}
+        <div className="mode-toggle" style={{ width: '120px', textAlign: 'right' }}>
+          <button
+            className={isEditMode ? 'active' : ''}
+            onClick={() => setIsEditMode(true)}
+          >
+            ✏️
+          </button>
+
+          <button
+            className={!isEditMode ? 'active' : ''}
+            onClick={() => setIsEditMode(false)}
+          >
+            👁️
+          </button>
+        </div>
+
       </header>
+
+
 
       {error && (
         <div style={{ 
