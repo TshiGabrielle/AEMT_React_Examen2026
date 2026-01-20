@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 
 export interface Note {
   id: number;
@@ -24,52 +25,74 @@ export function useNotes() {
     fetchNotes();
   }, []);
 
+  // --- Récupère toutes les notes (liste latérale)
   async function fetchNotes() {
-    const r = await fetch(API);
-    setNotes(await r.json());
+    const res = await fetch(API);
+    const data: Note[] = await res.json();
+    setNotes(data);
   }
 
+  // --- Charge une note par id (ouvre l’éditeur)
   async function loadNote(id: number) {
-    const r = await fetch(`${API}/${id}`);
-    setSelectedNote(await r.json());
+    const res = await fetch(`${API}/${id}`);
+    const data: Note = await res.json();
+    setSelectedNote(data);
   }
 
+  // --- Crée une note SANS popup, l’ouvre directement dans l’éditeur
   async function createNote() {
-    const name = prompt('Nom de la nouvelle note:');
-    if (!name) return;
-
-    const r = await fetch(API, {
+    const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, content_markdown: '', idFolder: 0 })
+      body: JSON.stringify({
+        name: 'Nouvelle note',       // nom par défaut
+        content_markdown: '',        // contenu vide
+        idFolder: 0                  // racine (à ajuster si tu utilises des dossiers)
+      })
     });
 
-    const note = await r.json();
+    const created: { id: number } = await res.json();
+
+    // rafraîchir la liste et ouvrir la note nouvellement créée
     await fetchNotes();
-    await loadNote(note.id);
+    await loadNote(created.id);
   }
 
+  // --- Met à jour le titre et le contenu markdown de la note
   async function updateNote(id: number, name: string, content: string) {
     await fetch(`${API}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, contentMarkdown: content })
+      body: JSON.stringify({
+        name: name,
+        contentMarkdown: content
+      })
     });
+
+    // rafraîchir la liste et recharger la note
     await fetchNotes();
     await loadNote(id);
   }
 
+  // --- Supprime une note par id
   async function deleteNote(id: number) {
     if (!confirm('Supprimer cette note ?')) return;
+
     await fetch(`${API}/${id}`, { method: 'DELETE' });
+
+    // si la note supprimée était sélectionnée, on vide l’éditeur
     setSelectedNote(null);
     await fetchNotes();
   }
 
   return {
+    // états
     notes,
     selectedNote,
     setSelectedNote,
+
+    // actions
+    fetchNotes,
     loadNote,
     createNote,
     updateNote,
