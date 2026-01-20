@@ -10,7 +10,8 @@ export function NotesLayout() {
     folders,
     rootNotes,
     fetchFolders,
-    loading
+    loading,
+    createFolder
   } = useFolders();
 
   const {
@@ -44,14 +45,26 @@ export function NotesLayout() {
   }, [folders, rootNotes, selectedNote]);
 
   // Rafraîchir les dossiers après création/suppression de note
-  const handleCreateNote = async () => {
-    await createNote();
+  const handleCreateNote = async (folderId: number | null = null) => {
+    await createNote(folderId);
     await fetchFolders();
   };
 
   const handleDeleteNote = async (id: number) => {
     await deleteNote(id);
     await fetchFolders();
+  };
+
+  const handleCreateFolder = async (parentId: number | null = null) => {
+    const name = prompt('Nom du dossier:');
+    if (name && name.trim()) {
+      try {
+        await createFolder(name.trim(), parentId);
+      } catch (error) {
+        setError('Erreur lors de la création du dossier');
+        console.error(error);
+      }
+    }
   };
 
   return (
@@ -94,8 +107,10 @@ export function NotesLayout() {
             rootNotes={rootNotes}
             selectedId={selectedNote?.id}
             onSelect={loadNote}
-            onCreate={handleCreateNote}
+            onCreate={() => handleCreateNote(null)}
             onDelete={handleDeleteNote}
+            onCreateFolder={handleCreateFolder}
+            onCreateNoteInFolder={(folderId) => handleCreateNote(folderId)}
           />
         )}
 

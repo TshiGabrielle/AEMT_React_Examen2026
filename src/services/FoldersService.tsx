@@ -98,5 +98,36 @@ export function useFolders() {
     }
   }
 
-  return { folders, rootNotes, fetchFolders, loading };
+  // Créer un dossier
+  async function createFolder(name: string, parentId: number | null = null) {
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          userId: 1, // TODO: Récupérer l'ID de l'utilisateur connecté
+          parentId: parentId
+        })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Erreur lors de la création du dossier:', errorText);
+        throw new Error('Erreur lors de la création du dossier');
+      }
+
+      const result = await res.json();
+      console.log('Dossier créé:', result);
+      
+      // Rafraîchir l'arborescence
+      await fetchFolders();
+      return result;
+    } catch (error) {
+      console.error('Erreur lors de la création du dossier:', error);
+      throw error;
+    }
+  }
+
+  return { folders, rootNotes, fetchFolders, loading, createFolder };
 }

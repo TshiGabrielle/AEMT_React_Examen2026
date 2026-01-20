@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Folder, FolderNote } from '../../../services/FoldersService.js';
 
 interface Props {
@@ -7,6 +8,8 @@ interface Props {
   onSelect: (id: number) => void;
   onCreate: () => void;
   onDelete: (id: number) => void;
+  onCreateFolder?: (parentId: number | null) => void;
+  onCreateNoteInFolder?: (folderId: number) => void;
 }
 
 // --- Rendu récursif d'un dossier ---
@@ -15,52 +18,95 @@ interface FolderTreeProps {
   selectedId: number | undefined;
   onSelect: (id: number) => void;
   onDelete: (id: number) => void;
+  expandedIds: number[];
+  toggleFolder: (id: number) => void;
+  onCreateFolder?: ((parentId: number) => void) | undefined;
+  onCreateNoteInFolder?: ((folderId: number) => void) | undefined;
 }
 
 function FolderTree({
   folder,
   selectedId,
   onSelect,
-  onDelete
+  onDelete,
+  expandedIds,
+  toggleFolder,
+  onCreateFolder,
+  onCreateNoteInFolder
 }: FolderTreeProps) {
+  const isExpanded = expandedIds.includes(folder.id);
+
   return (
     <div className="folder-block">
-      <div className="folder-title">
-        📁 {folder.name}
-      </div>
-
-      {/* Notes dans ce dossier */}
-      {folder.notes.map((note: FolderNote) => (
-        <div
-          key={note.id}
-          className={`note-item ${selectedId === note.id ? 'selected' : ''}`}
-          onClick={() => onSelect(note.id)}
+      <div
+        className="folder-title"
+        onClick={() => toggleFolder(folder.id)}
+        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+      >
+        <span>{isExpanded ? '📂' : '📁'}</span>
+        <span style={{ flex: 1 }}>{folder.name}</span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCreateFolder?.(folder.id);
+          }}
+          className="btn-create-small"
+          title="Créer un sous-dossier"
         >
-          <span className="note-name">{note.name}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(note.id);
-            }}
-            className="btn-delete"
-          >
-            ❌
-          </button>
-        </div>
-      ))}
-
-      {/* Sous-dossiers */}
-      <div className="folder-children">
-        {folder.children.map((child: Folder) => (
-          <FolderTree
-            key={child.id}
-            folder={child}
-            selectedId={selectedId}
-            onSelect={onSelect}
-            onDelete={onDelete}
-          />
-        ))}
+          📁+
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCreateNoteInFolder?.(folder.id);
+          }}
+          className="btn-create-small"
+          title="Créer une note"
+        >
+          📝+
+        </button>
       </div>
+
+      {isExpanded && (
+        <>
+          {/* Notes dans ce dossier */}
+          {folder.notes.map((note: FolderNote) => (
+            <div
+              key={note.id}
+              className={`note-item ${selectedId === note.id ? 'selected' : ''}`}
+              onClick={() => onSelect(note.id)}
+            >
+              <span className="note-name">{note.name}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(note.id);
+                }}
+                className="btn-delete"
+              >
+                ❌
+              </button>
+            </div>
+          ))}
+
+          {/* Sous-dossiers */}
+          <div className="folder-children">
+            {folder.children.map((child: Folder) => (
+              <FolderTree
+                key={child.id}
+                folder={child}
+                selectedId={selectedId}
+                onSelect={onSelect}
+                onDelete={onDelete}
+                expandedIds={expandedIds}
+                toggleFolder={toggleFolder}
+                onCreateFolder={onCreateFolder}
+                onCreateNoteInFolder={onCreateNoteInFolder}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -71,15 +117,34 @@ export function NotesSidebar({
   selectedId,
   onSelect,
   onCreate,
-  onDelete
+  onDelete,
+  onCreateFolder,
+  onCreateNoteInFolder
 }: Props) {
+  const [expandedIds, setExpandedIds] = useState<number[]>([]);
+
+  const toggleFolder = (id: number) => {
+    setExpandedIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+    );
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h2>Notes</h2>
-        <button onClick={onCreate} className="btn-create">
-          + Nouvelle note
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <button onClick={onCreate} className="btn-create">
+            📝 Nouvelle note
+          </button>
+          <button 
+            onClick={() => onCreateFolder?.(null)} 
+            className="btn-create"
+            style={{ background: 'rgba(138, 43, 226, 0.5)' }}
+          >
+            📁 Nouveau dossier
+          </button>
+        </div>
       </div>
 
       <div className="notes-list">
@@ -117,6 +182,10 @@ export function NotesSidebar({
                 selectedId={selectedId}
                 onSelect={onSelect}
                 onDelete={onDelete}
+                expandedIds={expandedIds}
+                toggleFolder={toggleFolder}
+                onCreateFolder={onCreateFolder}
+                onCreateNoteInFolder={onCreateNoteInFolder}
               />
             ))}
           </>

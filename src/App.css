@@ -399,6 +399,24 @@ body {
   background: #a448ff;
 }
 
+/* Boutons de création dans les dossiers */
+.btn-create-small {
+  background: rgba(138, 43, 226, 0.3);
+  border: 1px solid rgba(138, 43, 226, 0.5);
+  color: #d4a5ff;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  transition: all 0.3s;
+}
+
+.btn-create-small:hover {
+  background: rgba(138, 43, 226, 0.5);
+  border-color: #8a2be2;
+  transform: scale(1.1);
+}
+
 
 /* FOLDER TREE STYLES */
 .folder-block {
@@ -433,4 +451,3 @@ body {
 .metadata-panel p {
   margin: 0;
 }
-

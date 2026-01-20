@@ -83,7 +83,7 @@ export function useNotes() {
   }
 
   // --- Crée une note SANS popup, l'ouvre directement dans l'éditeur
-  async function createNote() {
+  async function createNote(folderId: number | null = null) {
     try {
       const res = await fetch(API, {
         method: 'POST',
@@ -91,7 +91,7 @@ export function useNotes() {
         body: JSON.stringify({
           name: 'Nouvelle note',       // nom par défaut
           content_markdown: '',        // contenu vide
-          idFolder: null               // racine (null = pas dans un dossier, correspond au backend)
+          idFolder: folderId           // null = racine, sinon ID du dossier
         })
       });
 
