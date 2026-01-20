@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
+import { AuthService } from './AuthService.js';
 
 // ---- Types envoyés par le backend ----
 
@@ -45,8 +46,14 @@ export function useFolders() {
   async function fetchFolders() {
     setLoading(true);
     try {
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       console.log('Fetching folders from:', API);
-      const res = await fetch(API);
+      const res = await fetch(`${API}?userId=${userId}`);
       
       if (!res.ok) {
         console.error('Erreur HTTP:', res.status, res.statusText);
@@ -101,12 +108,18 @@ export function useFolders() {
   // Créer un dossier
   async function createFolder(name: string, parentId: number | null = null) {
     try {
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       const res = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name,
-          userId: 1, // TODO: Récupérer l'ID de l'utilisateur connecté
+          userId: userId,
           parentId: parentId
         })
       });

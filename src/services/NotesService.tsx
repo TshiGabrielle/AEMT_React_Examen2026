@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AuthService } from './AuthService.js';
 
 export interface Note {
   id: number;
@@ -29,9 +30,15 @@ export function useNotes() {
   // On ne stocke que les infos minimales pour la liste
   async function fetchNotes() {
     try {
-      const res = await fetch(API);
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const res = await fetch(`${API}?userId=${userId}`);
       const data: { id: number; name: string }[] = await res.json();
-      // Convertir en format Note minimal pour la compatibilité
+
+      // Convertir en format Note pour la compatibilité
       const notesList: Note[] = data.map(n => ({
         id: n.id,
         name: n.name,
@@ -54,7 +61,13 @@ export function useNotes() {
   // --- Charge une note par id (ouvre l'éditeur)
   async function loadNote(id: number) {
     try {
-      const res = await fetch(`${API}/${id}`);
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const res = await fetch(`${API}/${id}?userId=${userId}`);
       if (!res.ok) {
         console.error('Note non trouvée');
         setSelectedNote(null);
@@ -85,15 +98,23 @@ export function useNotes() {
   // --- Crée une note SANS popup, l'ouvre directement dans l'éditeur
   async function createNote(folderId: number | null = null) {
     try {
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       const res = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'Nouvelle note',       // nom par défaut
-          content_markdown: '',        // contenu vide
-          idFolder: folderId           // null = racine, sinon ID du dossier
+          name: 'Nouvelle note',
+          content_markdown: '',
+          idFolder: folderId,
+          userId: userId   
         })
       });
+
 
       if (!res.ok) {
         throw new Error('Erreur lors de la création de la note');
@@ -112,14 +133,22 @@ export function useNotes() {
   // --- Met à jour le titre et le contenu markdown de la note
   async function updateNote(id: number, name: string, content: string) {
     try {
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       await fetch(`${API}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name,
-          contentMarkdown: content
+          contentMarkdown: content,
+          userId: userId
         })
       });
+
 
       // rafraîchir la liste et recharger la note
       await fetchNotes();
@@ -134,7 +163,13 @@ export function useNotes() {
     if (!confirm('Supprimer cette note ?')) return;
 
     try {
-      await fetch(`${API}/${id}`, { method: 'DELETE' });
+
+      const userId = AuthService.getUser();
+      if (!userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      await fetch(`${API}/${id}?userId=${userId}`, { method: 'DELETE' });
 
       // si la note supprimée était sélectionnée, on vide l'éditeur
       setSelectedNote(null);
