@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNotes } from '../../../services/NotesService.js';
+import { useFolders } from '../../../services/FoldersService.js';
 import { NotesSidebar } from '../components/NotesSidebar.js';
 import { NotesEditor } from '../components/NotesEditor.js';
 import { EmptyState } from '../components/EmptyState.js';
 
 export function NotesLayout() {
   const {
-    notes,
+    folders,
+    rootNotes,
+    fetchFolders,
+    loading
+  } = useFolders();
+
+  const {
     selectedNote,
     loadNote,
     createNote,
@@ -17,13 +24,35 @@ export function NotesLayout() {
   const [isEditMode, setIsEditMode] = useState(true);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedNote) {
       setTitle(selectedNote.name);
       setContent(selectedNote.content_markdown);
+    } else {
+      setTitle('');
+      setContent('');
     }
   }, [selectedNote]);
+
+  // Debug: afficher les données chargées
+  useEffect(() => {
+    console.log('Folders:', folders);
+    console.log('Root notes:', rootNotes);
+    console.log('Selected note:', selectedNote);
+  }, [folders, rootNotes, selectedNote]);
+
+  // Rafraîchir les dossiers après création/suppression de note
+  const handleCreateNote = async () => {
+    await createNote();
+    await fetchFolders();
+  };
+
+  const handleDeleteNote = async (id: number) => {
+    await deleteNote(id);
+    await fetchFolders();
+  };
 
   return (
     <div className="app">
@@ -35,14 +64,40 @@ export function NotesLayout() {
         </div>
       </header>
 
+      {error && (
+        <div style={{ 
+          background: '#ff4444', 
+          color: 'white', 
+          padding: '1rem', 
+          textAlign: 'center' 
+        }}>
+          Erreur: {error}
+        </div>
+      )}
+
       <div className="main-content">
-        <NotesSidebar
-          notes={notes}
-          selectedId={selectedNote?.id}
-          onSelect={loadNote}
-          onCreate={createNote}
-          onDelete={deleteNote}
-        />
+        {loading ? (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            width: '300px',
+            background: '#1a0d2e',
+            color: '#ff8c00',
+            fontSize: '1.2rem'
+          }}>
+            Chargement...
+          </div>
+        ) : (
+          <NotesSidebar
+            folders={folders}
+            rootNotes={rootNotes}
+            selectedId={selectedNote?.id}
+            onSelect={loadNote}
+            onCreate={handleCreateNote}
+            onDelete={handleDeleteNote}
+          />
+        )}
 
         {selectedNote ? (
           <NotesEditor

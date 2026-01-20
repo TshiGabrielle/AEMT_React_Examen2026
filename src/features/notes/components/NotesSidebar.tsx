@@ -1,20 +1,28 @@
-import type { Note } from '../../../services/NotesService.js';
+import type { Folder, FolderNote } from '../../../services/FoldersService.js';
 
 interface Props {
-  notes: Note[]; // ici tu passeras rootNotes + folders
+  folders: Folder[];          // Dossiers organisés en arbre
+  rootNotes: FolderNote[];    // Notes à la racine (pas dans un dossier)
   selectedId: number | undefined;
   onSelect: (id: number) => void;
   onCreate: () => void;
   onDelete: (id: number) => void;
 }
 
-// --- Rendu récursif d’un dossier ---
+// --- Rendu récursif d'un dossier ---
+interface FolderTreeProps {
+  folder: Folder;
+  selectedId: number | undefined;
+  onSelect: (id: number) => void;
+  onDelete: (id: number) => void;
+}
+
 function FolderTree({
   folder,
   selectedId,
   onSelect,
   onDelete
-}: any) {
+}: FolderTreeProps) {
   return (
     <div className="folder-block">
       <div className="folder-title">
@@ -22,7 +30,7 @@ function FolderTree({
       </div>
 
       {/* Notes dans ce dossier */}
-      {folder.notes.map((note: Note) => (
+      {folder.notes.map((note: FolderNote) => (
         <div
           key={note.id}
           className={`note-item ${selectedId === note.id ? 'selected' : ''}`}
@@ -43,7 +51,7 @@ function FolderTree({
 
       {/* Sous-dossiers */}
       <div className="folder-children">
-        {folder.children.map((child: any) => (
+        {folder.children.map((child: Folder) => (
           <FolderTree
             key={child.id}
             folder={child}
@@ -58,7 +66,8 @@ function FolderTree({
 }
 
 export function NotesSidebar({
-  notes,
+  folders,
+  rootNotes,
   selectedId,
   onSelect,
   onCreate,
@@ -74,41 +83,59 @@ export function NotesSidebar({
       </div>
 
       <div className="notes-list">
-
         {/* Notes à la racine */}
-        {notes
-          .filter((n: any) => !n.children) // notes simples
-          .map((note: Note) => (
-            <div
-              key={note.id}
-              className={`note-item ${selectedId === note.id ? 'selected' : ''}`}
-              onClick={() => onSelect(note.id)}
-            >
-              <span className="note-name">{note.name}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(note.id);
-                }}
-                className="btn-delete"
+        {rootNotes.length > 0 && (
+          <>
+            {rootNotes.map((note: FolderNote) => (
+              <div
+                key={note.id}
+                className={`note-item ${selectedId === note.id ? 'selected' : ''}`}
+                onClick={() => onSelect(note.id)}
               >
-                ❌
-              </button>
-            </div>
-          ))}
+                <span className="note-name">{note.name}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(note.id);
+                  }}
+                  className="btn-delete"
+                >
+                  ❌
+                </button>
+              </div>
+            ))}
+          </>
+        )}
 
         {/* Dossiers */}
-        {notes
-          .filter((n: any) => n.children) // folders
-          .map((folder: any) => (
-            <FolderTree
-              key={folder.id}
-              folder={folder}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              onDelete={onDelete}
-            />
-          ))}
+        {folders.length > 0 && (
+          <>
+            {folders.map((folder: Folder) => (
+              <FolderTree
+                key={folder.id}
+                folder={folder}
+                selectedId={selectedId}
+                onSelect={onSelect}
+                onDelete={onDelete}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Message si aucune donnée */}
+        {rootNotes.length === 0 && folders.length === 0 && (
+          <div style={{ 
+            padding: '2rem', 
+            textAlign: 'center', 
+            color: '#d4a5ff',
+            fontSize: '0.9rem'
+          }}>
+            <p>📝 Aucune note ou dossier</p>
+            <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
+              Créez une note pour commencer
+            </p>
+          </div>
+        )}
       </div>
     </aside>
   );

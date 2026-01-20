@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 
 export interface Note {
@@ -6,7 +5,7 @@ export interface Note {
   name: string;
   content_markdown: string;
   content_html: string;
-  idFolder: number;
+  folderId: number | null;  // null si la note est à la racine (correspond au backend)
   created_at: string;
   updated_at: string;
   taille_octet: number;
@@ -26,63 +25,123 @@ export function useNotes() {
   }, []);
 
   // --- Récupère toutes les notes (liste latérale)
+  // Note: Le backend retourne ListNotesOutput[] (juste id et name)
+  // On ne stocke que les infos minimales pour la liste
   async function fetchNotes() {
-    const res = await fetch(API);
-    const data: Note[] = await res.json();
-    setNotes(data);
+    try {
+      const res = await fetch(API);
+      const data: { id: number; name: string }[] = await res.json();
+      // Convertir en format Note minimal pour la compatibilité
+      const notesList: Note[] = data.map(n => ({
+        id: n.id,
+        name: n.name,
+        content_markdown: '',
+        content_html: '',
+        folderId: null,
+        created_at: '',
+        updated_at: '',
+        taille_octet: 0,
+        nblines: 0,
+        nbmots: 0,
+        nbcaract: 0
+      }));
+      setNotes(notesList);
+    } catch (error) {
+      console.error('Erreur lors du chargement des notes:', error);
+    }
   }
 
-  // --- Charge une note par id (ouvre l’éditeur)
+  // --- Charge une note par id (ouvre l'éditeur)
   async function loadNote(id: number) {
-    const res = await fetch(`${API}/${id}`);
-    const data: Note = await res.json();
-    setSelectedNote(data);
+    try {
+      const res = await fetch(`${API}/${id}`);
+      if (!res.ok) {
+        console.error('Note non trouvée');
+        setSelectedNote(null);
+        return;
+      }
+      const data = await res.json();
+      // Le backend retourne GetNoteOutput avec folderId (pas idFolder)
+      const note: Note = {
+        id: data.id,
+        name: data.name,
+        content_markdown: data.content_markdown || '',
+        content_html: data.content_html || '',
+        folderId: data.folderId,  // Le backend utilise folderId
+        created_at: data.created_at || '',
+        updated_at: data.updated_at || '',
+        taille_octet: data.taille_octet || 0,
+        nblines: data.nblines || 0,
+        nbmots: data.nbmots || 0,
+        nbcaract: data.nbcaract || 0
+      };
+      setSelectedNote(note);
+    } catch (error) {
+      console.error('Erreur lors du chargement de la note:', error);
+      setSelectedNote(null);
+    }
   }
 
-  // --- Crée une note SANS popup, l’ouvre directement dans l’éditeur
+  // --- Crée une note SANS popup, l'ouvre directement dans l'éditeur
   async function createNote() {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: 'Nouvelle note',       // nom par défaut
-        content_markdown: '',        // contenu vide
-        idFolder: 0                  // racine (à ajuster si tu utilises des dossiers)
-      })
-    });
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Nouvelle note',       // nom par défaut
+          content_markdown: '',        // contenu vide
+          idFolder: null               // racine (null = pas dans un dossier, correspond au backend)
+        })
+      });
 
-    const created: { id: number } = await res.json();
+      if (!res.ok) {
+        throw new Error('Erreur lors de la création de la note');
+      }
 
-    // rafraîchir la liste et ouvrir la note nouvellement créée
-    await fetchNotes();
-    await loadNote(created.id);
+      const created = await res.json();
+
+      // rafraîchir la liste et ouvrir la note nouvellement créée
+      await fetchNotes();
+      await loadNote(created.id);
+    } catch (error) {
+      console.error('Erreur lors de la création de la note:', error);
+    }
   }
 
   // --- Met à jour le titre et le contenu markdown de la note
   async function updateNote(id: number, name: string, content: string) {
-    await fetch(`${API}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name,
-        contentMarkdown: content
-      })
-    });
+    try {
+      await fetch(`${API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          contentMarkdown: content
+        })
+      });
 
-    // rafraîchir la liste et recharger la note
-    await fetchNotes();
-    await loadNote(id);
+      // rafraîchir la liste et recharger la note
+      await fetchNotes();
+      await loadNote(id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la note:', error);
+    }
   }
 
   // --- Supprime une note par id
   async function deleteNote(id: number) {
     if (!confirm('Supprimer cette note ?')) return;
 
-    await fetch(`${API}/${id}`, { method: 'DELETE' });
+    try {
+      await fetch(`${API}/${id}`, { method: 'DELETE' });
 
-    // si la note supprimée était sélectionnée, on vide l’éditeur
-    setSelectedNote(null);
-    await fetchNotes();
+      // si la note supprimée était sélectionnée, on vide l'éditeur
+      setSelectedNote(null);
+      await fetchNotes();
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la note:', error);
+    }
   }
 
   return {
