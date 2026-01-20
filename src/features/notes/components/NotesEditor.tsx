@@ -1,6 +1,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 
 interface Props {
   isEditMode: boolean;
@@ -19,6 +20,24 @@ export function NotesEditor({
   onContentChange,
   onSave
 }: Props) {
+  // Liste des éléments markdown autorisés (aucun HTML externe)
+  const allowed = [
+    "p",
+    "strong",
+    "em",
+    "h1",
+    "h2",
+    "h3",
+    "ul",
+    "ol",
+    "li",
+    "a",
+    "code",
+    "pre",
+    "blockquote",
+    "br"
+  ];
+
   return (
     <main className="editor">
       <div className="editor-toolbar">
@@ -39,13 +58,19 @@ export function NotesEditor({
         {isEditMode ? (
           <textarea
             value={content}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onContentChange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onContentChange(e.target.value)
+            }
             className="markdown-input"
             placeholder="Écrivez en Markdown..."
           />
         ) : (
           <div className="markdown-preview">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeSanitize]}
+              allowedElements={allowed}
+            >
               {content}
             </ReactMarkdown>
           </div>
