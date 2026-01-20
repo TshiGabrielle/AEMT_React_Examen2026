@@ -102,3 +102,29 @@
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+/* Fantôme décoratif */
+.auth-ghost {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  width: 120px;
+  opacity: 0.35;
+
+  pointer-events: none; /* ne gêne pas l'utilisateur */
+  animation: ghostFloat 6s ease-in-out infinite;
+}
+
+/* Animation douce de flottement */
+@keyframes ghostFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
