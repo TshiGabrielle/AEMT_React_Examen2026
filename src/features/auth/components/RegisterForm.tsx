@@ -25,7 +25,7 @@ export default function RegisterForm() {
 
       // Pour l'instant, on affiche simplement le résultat.
       // Plus tard, on connectera automatiquement l'utilisateur.
-      console.log('Compte créé ! userId =', result.userId)
+      console.log('Compte créé ! userId =', result)
 
     } catch (e) {
       setError("Impossible de créer le compte.")
