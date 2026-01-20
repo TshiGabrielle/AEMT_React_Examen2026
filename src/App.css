@@ -400,3 +400,15 @@ body {
 }
 
 
+.metadata-panel {
+  background: rgba(50, 20, 70, 0.4);
+  border-top: 2px solid #ff8c00;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #f0e6ff;
+  display: flex;
+  gap: 2rem;
+}
+.metadata-panel p {
+  margin: 0;
+}
