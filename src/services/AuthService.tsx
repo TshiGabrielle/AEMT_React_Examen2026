@@ -1,11 +1,13 @@
 // service responsable de la communication avec le backend pour l'authentification
 
 const url = 'http://localhost:8080/api/auth'
+const key = 'userId'
 
 // réponse attendue depuis le backend
-// ici on récupère juste l'id de l'utilisateur
 export interface AuthResponse {
-    userId: number
+    success: boolean
+    message: string
+    userId: number | null
 }
 
 export class AuthService {
@@ -43,5 +45,33 @@ export class AuthService {
             throw new Error("Erreur lors de l'inscription")
         }
         return await response.json()
+    }
+
+    // sauvegarde l'utilisateur connecté dans le navigateur
+    static saveUser(userId: number) {
+        localStorage.setItem(key, userId.toString())
+    }
+
+    // récupère l'utilisateur connecté (ou null s'il n'y en a pas)
+    static getUser(): number | null {
+        const value = localStorage.getItem(key)
+
+        if (value === null) {
+            // aucun utilisateur enregistré
+            return null
+        }
+
+        // on convertit la chaîne stockée en nombre
+        return Number(value)
+    }
+
+    // supprime l'utilisateur connecté (déconnexion)
+    static logout() {
+        localStorage.removeItem(key)
+    }
+
+    // indique si un utilisateur est connecté
+    static isLoggedIn(): boolean {
+        return this.getUser() !== null
     }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AuthService } from '../../../services/AuthService.js'
+import { useNavigate } from 'react-router-dom'
 
 // formulaire de connexion
 export default function LoginForm() {
@@ -8,6 +9,9 @@ export default function LoginForm() {
   const [pseudo, setPseudo] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // permet de naviguer vers une autre route
+  const navigate = useNavigate()
 
   // fct appelée lors de la soumission du formulaire
   async function handleSubmit(e: React.FormEvent) {
@@ -18,9 +22,19 @@ export default function LoginForm() {
       // appel au backend pour tenter une connexion
       const result = await AuthService.login(pseudo, password)
 
-      // Pour l'instant, on se contente d'afficher le résultat.
-      // Plus tard, on stockera le userId et on redirigera vers /app.
-      console.log('Connecté ! userId =', result.userId)
+      // si la connexion réussit et qu'on reçoit bien l'id de l'utilisateurt
+      if (result.success && result.userId !== null) {
+        // on sauvegarde l'utilisateur dans le navigateur
+        AuthService.saveUser(result.userId)
+
+        // redirection ver l'app
+        navigate('/app')
+      } else {
+        // échec de la connexion
+        setError(result.message)
+      }
+      
+        //console.log('Connecté ! userId =', result.userId)
 
     } catch (e) {
       // en cas d'erreur

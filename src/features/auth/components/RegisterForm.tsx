@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AuthService } from '../../../services/AuthService.js'
+import { useNavigate } from 'react-router-dom'
 
 // formulaire d'inscription
 export default function RegisterForm() {
@@ -8,6 +9,9 @@ export default function RegisterForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // permet de naviguer vers une autre route
+  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,10 +27,16 @@ export default function RegisterForm() {
       // appel au backend pour créer le compte
       const result = await AuthService.register(pseudo, password)
 
-      // Pour l'instant, on affiche simplement le résultat.
-      // Plus tard, on connectera automatiquement l'utilisateur.
-      console.log('Compte créé ! userId =', result)
+      if (result.success && result.userId !== null) {
+        // on connecte automatiquement l'utilisateur
+        AuthService.saveUser(result.userId)
 
+        // redirection vers l'application
+        navigate('/app')
+      } else {
+        setError(result.message)
+      }
+     // console.log('Compte créé ! userId =', result)
     } catch (e) {
       setError("Impossible de créer le compte.")
     }
