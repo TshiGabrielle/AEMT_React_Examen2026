@@ -1,12 +1,11 @@
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.js'
-import { BrowserRouter } from 'react-router'
 
-// on enveloppe le composant App avec le BrowserRouter
-// il permet d'activer le routing de l'application
+// Point d'entrée de l'application
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <App />
-  </BrowserRouter>,
+  </BrowserRouter>
 )
