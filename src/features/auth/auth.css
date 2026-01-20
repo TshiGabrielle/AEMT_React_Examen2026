@@ -1,0 +1,104 @@
+/* 
+  Conteneur principal de la page d'authentification
+*/
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #0e0e12;
+  color: #f2f2f2;
+  font-family: system-ui, sans-serif;
+}
+
+/*
+  Carte centrale contenant le formulaire
+*/
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+
+  background-color: #16161d;
+  border-radius: 12px;
+
+  /* légère bordure orange pour rappeler le thème Halloween */
+  border: 1px solid #ff8a2a;
+
+  /* ombre simple pour détacher la carte du fond */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* Titre principal */
+.auth-card h1 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+  color: #ff8a2a;
+}
+
+/*
+  Champs de saisie
+  - fond sombre
+  - bordure discrète
+  - texte clair
+*/
+.auth-card input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  margin-top: 0.3rem;
+
+  background-color: #0f0f14;
+  border: 1px solid #2a2a33;
+  border-radius: 6px;
+
+  color: #eee;
+}
+
+/* Mise en évidence du champ actif */
+.auth-card input:focus {
+  outline: none;
+  border-color: #ff8a2a;
+}
+
+/*
+  Bouton principal
+  - couleur orange pour l'action
+  - contraste fort avec le fond
+*/
+.auth-card button {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.6rem;
+
+  background-color: #ff8a2a;
+  border: none;
+  border-radius: 6px;
+
+  color: #111;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+
+  cursor: pointer;
+}
+
+.auth-card button:hover {
+  background-color: #ffa24d;
+}
+
+/* Texte de navigation (login / register) */
+.auth-switch {
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: #ff8a2a;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
