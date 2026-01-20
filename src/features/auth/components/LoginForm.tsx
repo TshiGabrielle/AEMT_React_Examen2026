@@ -1,21 +1,31 @@
 import { useState } from 'react'
+import { AuthService } from '../../../services/AuthService.js'
 
-// Formulaire de connexion.
-// Ce composant ne gère que le formulaire lui-même.
-// La logique d'auth réelle sera ajoutée plus tard.
+// formulaire de connexion
 export default function LoginForm() {
 
-  // États locaux pour stocker ce que l'utilisateur tape
+  // états locaux pour stocker les valeurs saisies
   const [pseudo, setPseudo] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  // Gestion de la soumission du formulaire
-  function handleSubmit(e: React.FormEvent) {
+  // fct appelée lors de la soumission du formulaire
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError(null)
 
-    // Pour l'instant, on ne fait qu'afficher les valeurs.
-    // Plus tard, on appellera l'API de login ici.
-    console.log('Login:', { pseudo, password })
+    try {
+      // appel au backend pour tenter une connexion
+      const result = await AuthService.login(pseudo, password)
+
+      // Pour l'instant, on se contente d'afficher le résultat.
+      // Plus tard, on stockera le userId et on redirigera vers /app.
+      console.log('Connecté ! userId =', result.userId)
+
+    } catch (e) {
+      // en cas d'erreur
+      setError('Pseudo ou mot de passe incorrect.')
+    }
   }
 
   return (
@@ -43,7 +53,10 @@ export default function LoginForm() {
         />
       </div>
 
-      {/* Bouton de soumission */}
+      {/* msg d'erreur */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* btn de soumission */}
       <div>
         <button type="submit">Se connecter</button>
       </div>

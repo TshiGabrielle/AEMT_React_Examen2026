@@ -1,25 +1,35 @@
 import { useState } from 'react'
+import { AuthService } from '../../../services/AuthService.js'
 
-// Formulaire d'inscription.
-// Même principe que LoginForm, mais pour créer un compte.
+// formulaire d'inscription
 export default function RegisterForm() {
 
   const [pseudo, setPseudo] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError(null)
 
-    // Petite vérification locale basique
+    // vérification 
     if (password !== confirmPassword) {
-      alert('Les mots de passe ne correspondent pas.')
+      setError('Les mots de passe ne correspondent pas.')
       return
     }
 
-    // Pour l'instant, on affiche juste les valeurs.
-    // L'appel API viendra plus tard.
-    console.log('Register:', { pseudo, password })
+    try {
+      // appel au backend pour créer le compte
+      const result = await AuthService.register(pseudo, password)
+
+      // Pour l'instant, on affiche simplement le résultat.
+      // Plus tard, on connectera automatiquement l'utilisateur.
+      console.log('Compte créé ! userId =', result.userId)
+
+    } catch (e) {
+      setError("Impossible de créer le compte.")
+    }
   }
 
   return (
@@ -58,7 +68,10 @@ export default function RegisterForm() {
         />
       </div>
 
-      {/* Bouton de soumission */}
+      {/* msg éventuel */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* btn de soumission */}
       <div>
         <button type="submit">S'inscrire</button>
       </div>

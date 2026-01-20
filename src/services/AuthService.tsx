@@ -10,7 +10,7 @@ export interface AuthResponse {
 
 export class AuthService {
     // envoie une requête au backend pour se connecter
-    async login(pseudo: string, password: string): Promise<AuthResponse> {
+    static async login(pseudo: string, password: string): Promise<AuthResponse> {
         const response = await fetch(`${url}/login`, {
             method: 'POST',
             headers: {
@@ -30,7 +30,7 @@ export class AuthService {
     }
 
     // envoie une requête au backend pour s'inscrire
-    async register(pseudo: string, password: string): Promise<AuthResponse> {
+    static async register(pseudo: string, password: string): Promise<AuthResponse> {
         const response = await fetch(`${url}/register`, {
             method: 'POST',
             headers: {
