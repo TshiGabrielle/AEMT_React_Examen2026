@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -12,6 +13,45 @@ interface Props {
   onSave: () => void;
 }
 
+function MarkdownHelp({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="markdown-help-backdrop">
+      <div className="markdown-help-window">
+        <h2>📘 Aide Markdown</h2>
+
+        <p>Voici les bases du Markdown :</p>
+
+        <ul>
+          <li><code>#</code> Titre → <strong>H1</strong></li>
+          <li><code>##</code> Sous‑titre → <strong>H2</strong></li>
+          <li><code>**gras**</code> → texte en gras</li>
+          <li><code>*italique*</code> → texte en italique</li>
+          <li><code>- élément</code> → liste à puces</li>
+          <li><code>1. élément</code> → liste numérotée</li>
+          <li><code>https://lien.com</code> → lien cliquable</li>
+          <li><code>`code`</code> → code inline</li>
+          <li><code>```js ... ```</code> → bloc de code</li>
+        </ul>
+
+        <p>Exemple :</p>
+        <pre>
+{`# Titre principal
+## Sous-titre
+- Élément
+**Texte en gras**
+https://example.com
+\`Code inline\`
+`}
+        </pre>
+
+        <button className="btn-close" onClick={onClose}>
+          Fermer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function NotesEditor({
   isEditMode,
   title,
@@ -20,7 +60,8 @@ export function NotesEditor({
   onContentChange,
   onSave
 }: Props) {
-  // Liste des éléments markdown autorisés (aucun HTML externe)
+  const [showHelp, setShowHelp] = useState(false);
+
   const allowed = [
     "p",
     "strong",
@@ -49,6 +90,11 @@ export function NotesEditor({
           placeholder="Titre de la note..."
           disabled={!isEditMode}
         />
+
+        <button className="btn-help" onClick={() => setShowHelp(true)}>
+          ❓ Markdown
+        </button>
+
         <button onClick={onSave} className="btn-save">
           💾 Enregistrer
         </button>
@@ -76,6 +122,8 @@ export function NotesEditor({
           </div>
         )}
       </div>
+
+      {showHelp && <MarkdownHelp onClose={() => setShowHelp(false)} />}
     </main>
   );
 }
