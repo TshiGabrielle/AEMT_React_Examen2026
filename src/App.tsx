@@ -1,12 +1,20 @@
 import { NotesLayout } from './features/notes/layouts/NotesLayout.js';
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom'
+import RegisterLayout from './features/auth/layouts/RegisterLayout.js';
+import LoginLayout from './features/auth/layouts/LoginLayout.js';
 
 // composant racine de l'app
 // gère le routing
 function App() {
   return (
     <Routes>
+
+      {/*
+        routes d'authentification
+      */}
+      <Route path="/auth/login" element={<LoginLayout />} />
+      <Route path="/auth/register" element={<RegisterLayout />} />
 
       {/*
         route principale de l'app
