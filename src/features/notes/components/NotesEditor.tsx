@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -13,38 +13,20 @@ interface Props {
   onSave: () => void;
 }
 
-/* ----------------------------- HELP POPUP ----------------------------- */
-
 function MarkdownHelp({ onClose }: { onClose: () => void }) {
   return (
     <div className="markdown-help-backdrop">
       <div className="markdown-help-window">
         <h2>📘 Aide Markdown</h2>
 
-        <p>Voici les bases du Markdown :</p>
-
         <ul>
-          <li><code>#</code> Titre → <strong>H1</strong></li>
-          <li><code>##</code> Sous‑titre → <strong>H2</strong></li>
-          <li><code>**gras**</code> → texte en gras</li>
-          <li><code>*italique*</code> → texte en italique</li>
-          <li><code>- élément</code> → liste à puces</li>
-          <li><code>1. élément</code> → liste ordonnée</li>
-          <li><code>https://lien.com</code> → lien cliquable</li>
-          <li><code>`code`</code> → code inline</li>
-          <li><code>```js ... ```</code> → bloc de code</li>
+          <li># Titre</li>
+          <li>## Sous‑titre</li>
+          <li>**Gras**, *Italique*</li>
+          <li>- Liste</li>
+          <li>`Code inline`</li>
+          <li>```js ... ``` Bloc de code</li>
         </ul>
-
-        <p>Exemple :</p>
-        <pre>
-{`# Titre principal
-## Sous-titre
-- Élément
-**Texte en gras**
-https://example.com
-\`Code inline\`
-`}
-        </pre>
 
         <button className="btn-close" onClick={onClose}>
           Fermer
@@ -53,8 +35,6 @@ https://example.com
     </div>
   );
 }
-
-/* ----------------------------- MAIN COMPONENT ----------------------------- */
 
 export function NotesEditor({
   isEditMode,
@@ -65,8 +45,6 @@ export function NotesEditor({
   onSave
 }: Props) {
 
-  /* ---------- ÉTAT DES MÉTADONNÉES ---------- */
-
   const [stats, setStats] = useState({
     chars: 0,
     words: 0,
@@ -75,8 +53,6 @@ export function NotesEditor({
   });
 
   const [showHelp, setShowHelp] = useState(false);
-
-  /* ---------- FONCTION DE CALCUL DES MÉTADONNÉES ----------- */
 
   function computeStats(text: string) {
     const chars = text.length;
@@ -87,30 +63,31 @@ export function NotesEditor({
     setStats({ chars, words, lines, bytes });
   }
 
-  /* ---------- MET À JOUR LES MÉTADONNÉES LORSQUE LA NOTE CHANGE (LOAD) ---------- */
-
   useEffect(() => {
     computeStats(content);
   }, [content]);
 
-  /* ---------- LISTE DES ÉLÉMENTS HTML AUTORISÉS DANS LE MARKDOWN ---------- */
-
   const allowed = [
-    "p", "strong", "em",
-    "h1", "h2", "h3",
-    "ul", "ol", "li",
+    "p",
+    "strong",
+    "em",
+    "h1",
+    "h2",
+    "h3",
+    "ul",
+    "ol",
+    "li",
     "a",
-    "code", "pre",
+    "code",
+    "pre",
     "blockquote",
     "br"
   ];
 
-  /* ---------------------------- RENDER ---------------------------- */
-
   return (
     <main className="editor">
 
-      {/* ---------- BARRE D'OUTILS ---------- */}
+      {/* Toolbar */}
       <div className="editor-toolbar">
         <input
           type="text"
@@ -125,37 +102,47 @@ export function NotesEditor({
           ❓ Markdown
         </button>
 
-        <button onClick={onSave} className="btn-save">
+        <button className="btn-save" onClick={onSave}>
           💾 Enregistrer
         </button>
       </div>
 
-      {/* ---------- ZONE D'ÉDITION / PRÉVISUALISATION ---------- */}
-      <div className="editor-content">
-        {isEditMode ? (
+      {/* ZONE PRINCIPALE */}
+      <div className="editor-content" style={{ display: "flex" }}>
+
+        {/* MODE ÉCRITURE = textarea + preview */}
+        {isEditMode && (
           <textarea
             value={content}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            onChange={(e) => {
               onContentChange(e.target.value);
-              computeStats(e.target.value); // Mise à jour en temps réel
+              computeStats(e.target.value);
             }}
             className="markdown-input"
             placeholder="Écrivez en Markdown..."
+            style={{ width: "50%" }}
           />
-        ) : (
-          <div className="markdown-preview">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSanitize]}
-              allowedElements={allowed}
-            >
-              {content}
-            </ReactMarkdown>
-          </div>
         )}
+
+        {/* APERCU HTML LIVE (toujours visible) */}
+        <div
+          className="markdown-preview"
+          style={{
+            width: isEditMode ? "50%" : "100%",
+            borderLeft: "2px solid #ff8c00"
+          }}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
+            allowedElements={allowed}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
       </div>
 
-      {/* ---------- PANNEAU MÉTADONNÉES ---------- */}
+      {/* Panneau métadonnées */}
       <div className="metadata-panel">
         <p><strong>Lignes :</strong> {stats.lines}</p>
         <p><strong>Mots :</strong> {stats.words}</p>
@@ -163,7 +150,6 @@ export function NotesEditor({
         <p><strong>Taille :</strong> {stats.bytes} octets</p>
       </div>
 
-      {/* MODALE AIDE MARKDOWN */}
       {showHelp && <MarkdownHelp onClose={() => setShowHelp(false)} />}
     </main>
   );
