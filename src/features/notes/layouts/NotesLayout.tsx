@@ -112,7 +112,7 @@ export function NotesLayout() {
 
         {/* Centre : titre */}
         <h1 style={{ margin: 0, textAlign: 'center', flex: 1 }}>
-          {selectedNote ? title || 'Sans titre' : '🎃 Spooky Notes'}
+          🎃 Spooky Notes
         </h1>
 
         {/* Droite : modes */}
