@@ -5,14 +5,15 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 
 interface Props {
-  isEditMode: boolean;
-  title: string;
-  content: string;
-  onTitleChange: (v: string) => void;
-  onContentChange: (v: string) => void;
-  onSave: () => void;
+  isEditMode: boolean;              // mode édition ou lecture
+  title: string;                    // titre de la note
+  content: string;                  // contenu Markdown de la note
+  onTitleChange: (v: string) => void;   // callback modification du titre
+  onContentChange: (v: string) => void; // callback modification du contenu
+  onSave: () => void;               // action lors du clic "Enregistrer"
 }
 
+// Petite fenêtre d'aide Markdown
 function MarkdownHelp({ onClose }: { onClose: () => void }) {
   return (
     <div className="markdown-help-backdrop">
@@ -45,6 +46,7 @@ export function NotesEditor({
   onSave
 }: Props) {
 
+  // Métadonnées : mots, lignes, etc.
   const [stats, setStats] = useState({
     chars: 0,
     words: 0,
@@ -52,8 +54,10 @@ export function NotesEditor({
     bytes: 0
   });
 
+  // Affichage de l’aide Markdown
   const [showHelp, setShowHelp] = useState(false);
 
+  // Fonction interne : calcule les métadonnées
   function computeStats(text: string) {
     const chars = text.length;
     const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
@@ -63,31 +67,22 @@ export function NotesEditor({
     setStats({ chars, words, lines, bytes });
   }
 
+  // À chaque changement du contenu → recalcule les stats
   useEffect(() => {
     computeStats(content);
   }, [content]);
 
+  // Balises HTML autorisées dans le Markdown (sécurité)
   const allowed = [
-    "p",
-    "strong",
-    "em",
-    "h1",
-    "h2",
-    "h3",
-    "ul",
-    "ol",
-    "li",
-    "a",
-    "code",
-    "pre",
-    "blockquote",
-    "br"
+    "p", "strong", "em", "h1", "h2", "h3",
+    "ul", "ol", "li", "a", "code", "pre",
+    "blockquote", "br"
   ];
 
   return (
     <main className="editor">
 
-      {/* Toolbar */}
+      {/* Barre d’outils */}
       <div className="editor-toolbar">
         <input
           type="text"
@@ -107,10 +102,10 @@ export function NotesEditor({
         </button>
       </div>
 
-      {/* ZONE PRINCIPALE */}
+      {/* Zone principale */}
       <div className="editor-content" style={{ display: "flex" }}>
 
-        {/* MODE ÉCRITURE = textarea + preview */}
+        {/* Mode édition : textarea visible */}
         {isEditMode && (
           <textarea
             value={content}
@@ -124,7 +119,7 @@ export function NotesEditor({
           />
         )}
 
-        {/* APERCU HTML LIVE (toujours visible) */}
+        {/* Preview HTML en temps réel */}
         <div
           className="markdown-preview"
           style={{
@@ -142,7 +137,7 @@ export function NotesEditor({
         </div>
       </div>
 
-      {/* Panneau métadonnées */}
+      {/* Métadonnées */}
       <div className="metadata-panel">
         <p><strong>Lignes :</strong> {stats.lines}</p>
         <p><strong>Mots :</strong> {stats.words}</p>
@@ -150,6 +145,7 @@ export function NotesEditor({
         <p><strong>Taille :</strong> {stats.bytes} octets</p>
       </div>
 
+      {/* Aide Markdown */}
       {showHelp && <MarkdownHelp onClose={() => setShowHelp(false)} />}
     </main>
   );
