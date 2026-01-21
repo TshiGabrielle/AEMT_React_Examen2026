@@ -1,8 +1,11 @@
-
+import { NotesExportService } from "../../../services/NotesExportService.js";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+
+// instance du service d’exportation
+const notesExportService = new NotesExportService();
 
 interface Props {
   isEditMode: boolean;              // mode édition ou lecture
@@ -11,6 +14,7 @@ interface Props {
   onTitleChange: (v: string) => void;   // callback modification du titre
   onContentChange: (v: string) => void; // callback modification du contenu
   onSave: () => void;               // action lors du clic "Enregistrer"
+  noteId: number;                   // ID de la note courante
 }
 
 // Petite fenêtre d'aide Markdown
@@ -43,7 +47,8 @@ export function NotesEditor({
   content,
   onTitleChange,
   onContentChange,
-  onSave
+  onSave,
+  noteId
 }: Props) {
 
   // Métadonnées : mots, lignes, etc.
@@ -79,6 +84,24 @@ export function NotesEditor({
     "blockquote", "br"
   ];
 
+  async function handleDownloadPdf() {
+    const blob = await notesExportService.downloadPdf(noteId);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title || "note"}.pdf`;
+    a.click();
+  }
+
+  async function handleDownloadZip() {
+    const blob = await notesExportService.downloadZip(noteId);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title || "note"}.zip`;
+    a.click();
+  }
+
   return (
     <main className="editor">
 
@@ -100,6 +123,15 @@ export function NotesEditor({
         <button className="btn-save" onClick={onSave}>
           💾 Enregistrer
         </button>
+
+        <button className="btn-export" onClick={handleDownloadPdf}>
+          📄 Export PDF
+        </button>
+
+        <button className="btn-export" onClick={handleDownloadZip}>
+          🗂️ Export ZIP
+        </button>
+
       </div>
 
       {/* Zone principale */}

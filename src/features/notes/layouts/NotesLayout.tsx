@@ -168,6 +168,7 @@ export function NotesLayout() {
             onTitleChange={setTitle}
             onContentChange={setContent}
             onSave={() => updateNote(selectedNote.id, title, content)}
+            noteId={selectedNote.id}
           />
         ) : (
           <EmptyState />
