@@ -10,6 +10,8 @@ interface Props {
   onDelete: (id: number) => void;
   onCreateFolder?: (parentId: number | null) => void;
   onCreateNoteInFolder?: (folderId: number) => void;
+  onRenameFolder?: (folderId: number, newName: string) => void;
+  onDeleteFolder?: (folderId: number) => void;
 }
 
 // --- Rendu récursif d'un dossier ---
@@ -22,6 +24,10 @@ interface FolderTreeProps {
   toggleFolder: (id: number) => void;
   onCreateFolder?: ((parentId: number) => void) | undefined;
   onCreateNoteInFolder?: ((folderId: number) => void) | undefined;
+  onRenameFolder?: ((folderId: number, newName: string) => void) | undefined;
+  onDeleteFolder?: ((folderId: number) => void) | undefined;
+  hoveredFolderId: number | null;
+  setHoveredFolderId: (id: number | null) => void;
 }
 
 function FolderTree({
@@ -32,39 +38,100 @@ function FolderTree({
   expandedIds,
   toggleFolder,
   onCreateFolder,
-  onCreateNoteInFolder
+  onCreateNoteInFolder,
+  onRenameFolder,
+  onDeleteFolder,
+  hoveredFolderId,
+  setHoveredFolderId
 }: FolderTreeProps) {
   const isExpanded = expandedIds.includes(folder.id);
+  const isHovered = hoveredFolderId === folder.id;
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleRename = () => {
+    const newName = prompt('Nouveau nom du dossier:', folder.name);
+    if (newName && newName.trim() && newName !== folder.name) {
+      onRenameFolder?.(folder.id, newName.trim());
+    }
+  };
+
+  const handleDeleteFolder = () => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder.name}" ?`)) {
+      onDeleteFolder?.(folder.id);
+    }
+  };
 
   return (
     <div className="folder-block">
       <div
         className="folder-title"
         onClick={() => toggleFolder(folder.id)}
-        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        onMouseEnter={() => setHoveredFolderId(folder.id)}
+        onMouseLeave={() => setHoveredFolderId(null)}
+        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
       >
         <span>{isExpanded ? '📂' : '📁'}</span>
-        <span style={{ flex: 1 }}>{folder.name}</span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onCreateFolder?.(folder.id);
-          }}
-          className="btn-create-small"
-          title="Créer un sous-dossier"
-        >
-          📁+
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onCreateNoteInFolder?.(folder.id);
-          }}
-          className="btn-create-small"
-          title="Créer une note"
-        >
-          📝+
-        </button>
+        <span className="folder-name-text">{folder.name}</span>
+        
+        {/* Menu Burger */}
+        <div className="folder-menu-container">
+          <button
+            className="btn-folder-menu"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            title="Actions"
+          >
+            ⋮
+          </button>
+          
+          {showMenu && (
+            <div className="folder-menu-dropdown">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateNoteInFolder?.(folder.id);
+                  setShowMenu(false);
+                }}
+                className="menu-item"
+              >
+                📝 Nouvelle note
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateFolder?.(folder.id);
+                  setShowMenu(false);
+                }}
+                className="menu-item"
+              >
+                📁 Nouveau dossier
+              </button>
+              <div className="menu-separator"></div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRename?.();
+                  setShowMenu(false);
+                }}
+                className="menu-item"
+              >
+                ✏️ Renommer
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteFolder?.();
+                  setShowMenu(false);
+                }}
+                className="menu-item menu-item-danger"
+              >
+                🗑️ Supprimer
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {isExpanded && (
@@ -102,6 +169,10 @@ function FolderTree({
                 toggleFolder={toggleFolder}
                 onCreateFolder={onCreateFolder}
                 onCreateNoteInFolder={onCreateNoteInFolder}
+                onRenameFolder={onRenameFolder}
+                onDeleteFolder={onDeleteFolder}
+                hoveredFolderId={hoveredFolderId}
+                setHoveredFolderId={setHoveredFolderId}
               />
             ))}
           </div>
@@ -119,9 +190,12 @@ export function NotesSidebar({
   onCreate,
   onDelete,
   onCreateFolder,
-  onCreateNoteInFolder
+  onCreateNoteInFolder,
+  onRenameFolder,
+  onDeleteFolder
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
+  const [hoveredFolderId, setHoveredFolderId] = useState<number | null>(null);
 
   const toggleFolder = (id: number) => {
     setExpandedIds((current) =>
@@ -186,6 +260,10 @@ export function NotesSidebar({
                 toggleFolder={toggleFolder}
                 onCreateFolder={onCreateFolder}
                 onCreateNoteInFolder={onCreateNoteInFolder}
+                onRenameFolder={onRenameFolder}
+                onDeleteFolder={onDeleteFolder}
+                hoveredFolderId={hoveredFolderId}
+                setHoveredFolderId={setHoveredFolderId}
               />
             ))}
           </>

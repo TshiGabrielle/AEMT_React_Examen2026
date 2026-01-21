@@ -13,7 +13,9 @@ export function NotesLayout() {
     rootNotes,
     fetchFolders,
     loading,
-    createFolder
+    createFolder,
+    renameFolder,
+    deleteFolder
   } = useFolders();
 
   const {
@@ -68,6 +70,26 @@ export function NotesLayout() {
         setError('Erreur lors de la création du dossier');
         console.error(error);
       }
+    }
+  };
+
+  // Renommer un dossier
+  const handleRenameFolder = async (folderId: number, newName: string) => {
+    try {
+      await renameFolder(folderId, newName);
+    } catch (error) {
+      setError('Erreur lors du renommage du dossier');
+      console.error(error);
+    }
+  };
+
+  // Supprimer un dossier
+  const handleDeleteFolder = async (folderId: number) => {
+    try {
+      await deleteFolder(folderId);
+    } catch (error) {
+      setError('Erreur lors de la suppression du dossier');
+      console.error(error);
     }
   };
 
@@ -170,6 +192,8 @@ export function NotesLayout() {
             onDelete={handleDeleteNote}
             onCreateFolder={handleCreateFolder}
             onCreateNoteInFolder={(folderId) => handleCreateNote(folderId)}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
           />
         )}
 

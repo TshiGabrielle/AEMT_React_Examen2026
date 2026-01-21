@@ -142,5 +142,49 @@ export function useFolders() {
     }
   }
 
-  return { folders, rootNotes, fetchFolders, loading, createFolder };
+  // Renommer un dossier
+  async function renameFolder(folderId: number, newName: string) {
+  const userId = AuthService.getUser();
+  if (!userId) throw new Error('Utilisateur non connecté');
+
+  const res = await fetch(
+    `${API}/${folderId}?userId=${userId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName })
+    }
+  );
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Erreur renommage dossier:', errorText);
+    throw new Error('Erreur renommage dossier');
+  }
+
+  await fetchFolders();
+}
+
+  // Supprimer un dossier
+  async function deleteFolder(folderId: number) {
+  const userId = AuthService.getUser();
+  if (!userId) throw new Error('Utilisateur non connecté');
+
+  const res = await fetch(
+    `${API}/${folderId}?userId=${userId}`,
+    {
+      method: 'DELETE'
+    }
+  );
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Erreur suppression dossier:', errorText);
+    throw new Error('Erreur suppression dossier');
+  }
+
+  await fetchFolders();
+}
+
+  return { folders, rootNotes, fetchFolders, loading, createFolder, renameFolder, deleteFolder };
 }
