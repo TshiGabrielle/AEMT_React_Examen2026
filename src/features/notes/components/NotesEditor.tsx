@@ -62,8 +62,8 @@ export function NotesEditor({
   });
 
   // Affichage de l’aide Markdown
-  const [showHelp, setShowHelp] = useState(false);
-
+  const [showHelp, setShowHelp] = useState(false);  // Message de sauvegarde réussie
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   // Fonction interne : calcule les métadonnées
   function computeStats(text: string) {
     const chars = text.length;
@@ -109,10 +109,21 @@ export function NotesEditor({
   timeStyle: "short",
   });
 
+  // Fonction pour afficher la notification de succès
+  function handleSaveWithFeedback() {
+    onSave();
+    setShowSaveSuccess(true);
+    setTimeout(() => setShowSaveSuccess(false), 3000);
+  }
 
   return (
     <main className="editor">
-
+      {/* Notification de sauvegarde */}
+      {showSaveSuccess && (
+        <div className="save-success-notification">
+          <span>✓ Note enregistrée avec succès</span>
+        </div>
+      )}
       {/* Barre d’outils */}
       <div className="editor-toolbar">
         <input
@@ -124,21 +135,23 @@ export function NotesEditor({
           disabled={!isEditMode}
         />
 
-        <button className="btn-help" onClick={() => setShowHelp(true)}>
-          ❓ Markdown
-        </button>
+        <div className="toolbar-buttons-group">
+          <button className="btn-help" onClick={() => setShowHelp(true)} title="Aide Markdown">
+            ❓
+          </button>
 
-        <button className="btn-save" onClick={onSave}>
-          💾 Enregistrer
-        </button>
+          <button className="btn-save" onClick={handleSaveWithFeedback} title="Enregistrer">
+            💾
+          </button>
 
-        <button className="btn-export" onClick={handleDownloadPdf}>
-          📄 Export PDF
-        </button>
+          <button className="btn-export" onClick={handleDownloadPdf} title="Export PDF">
+            📄
+          </button>
 
-        <button className="btn-export" onClick={handleDownloadZip}>
-          🗂️ Export ZIP
-        </button>
+          <button className="btn-export" onClick={handleDownloadZip} title="Export ZIP">
+            🗂️
+          </button>
+        </div>
 
       </div>
 

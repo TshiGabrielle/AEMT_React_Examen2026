@@ -71,7 +71,20 @@ export function NotesLayout() {
     }
   };
 
-    function handleLogout() {
+  // Fonction de sauvegarde qui met à jour et recharge la note
+  const handleSave = async () => {
+    try {
+      await updateNote(selectedNote!.id, title, content);
+      // Recharger la note pour que l'en-tête se mette à jour
+      await loadNote(selectedNote!.id);
+      await fetchFolders();
+    } catch (error) {
+      setError('Erreur lors de la sauvegarde');
+      console.error(error);
+    }
+  };
+
+  function handleLogout() {
     AuthService.logout();
     navigate('/auth/login');
   }
@@ -99,7 +112,7 @@ export function NotesLayout() {
 
         {/* Centre : titre */}
         <h1 style={{ margin: 0, textAlign: 'center', flex: 1 }}>
-          🎃 Spooky Notes
+          {selectedNote ? title || 'Sans titre' : '🎃 Spooky Notes'}
         </h1>
 
         {/* Droite : modes */}
@@ -167,7 +180,7 @@ export function NotesLayout() {
             content={content}
             onTitleChange={setTitle}
             onContentChange={setContent}
-            onSave={() => updateNote(selectedNote.id, title, content)}
+            onSave={handleSave}
             noteId={selectedNote.id}
             updatedAt ={selectedNote.updated_at}
           />
