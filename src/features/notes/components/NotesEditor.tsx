@@ -2,6 +2,7 @@ import React from "react";
 import { NotesExportService } from "../../../services/NotesExportService.js";
 import { useState, useEffect } from "react";
 import { NoteLinksRenderer } from "./NoteLinks.js";
+import { ConfirmModal } from "./ConfirmModal.js";
 
 
 // instance du service d’exportation
@@ -97,6 +98,7 @@ export function NotesEditor({
   // Affichage de l’aide Markdown
   const [showHelp, setShowHelp] = useState(false);  // Message de sauvegarde réussie
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showEmptyPdfWarning, setShowEmptyPdfWarning] = useState(false);
   // Fonction interne : calcule les métadonnées
   function computeStats(text: string) {
     const chars = text.length;
@@ -112,13 +114,21 @@ export function NotesEditor({
     computeStats(content);
   }, [content]);
 
-  async function handleDownloadPdf() {
+  async function downloadPdf() {
     const blob = await notesExportService.downloadPdf(noteId);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `${title || "note"}.pdf`;
     a.click();
+  }
+
+  function handleDownloadPdf() {
+    if (!content.trim()) {
+      setShowEmptyPdfWarning(true);
+      return;
+    }
+    void downloadPdf();
   }
 
   async function handleDownloadZip() {
@@ -237,6 +247,21 @@ export function NotesEditor({
 
       {/* Aide Markdown */}
       {showHelp && <MarkdownHelp onClose={() => setShowHelp(false)} />}
+
+      {/* Avertissement export PDF vide */}
+      <ConfirmModal
+        isOpen={showEmptyPdfWarning}
+        onClose={() => setShowEmptyPdfWarning(false)}
+        onConfirm={() => {
+          setShowEmptyPdfWarning(false);
+          void downloadPdf();
+        }}
+        title="Exporter un PDF vide ?"
+        message="La note est vide. Voulez-vous quand même exporter un PDF vide ?"
+        confirmText="Exporter"
+        cancelText="Annuler"
+        danger={false}
+      />
     </main>
   );
 }
