@@ -330,6 +330,7 @@ export function NotesSidebar({
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const previousFoldersRef = useRef<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   function findFolderNameById(folders: Folder[], id: number): string | null {
   for (const f of folders) {
@@ -420,9 +421,8 @@ export function NotesSidebar({
       <div className="sidebar-header">
         <div className="sidebar-title-section">
           <h2 align="center">📚 Mes Notes</h2>
-
-          <button className="btn-help">
-            <img src={lamp} alt="Astuces raccourcis"/>
+          <button className="btn-help" onClick={() => setShowShortcuts(true)}>
+            <img src={lamp} alt="Astuces raccourcis" />
           </button>
         </div>
         <div className="sidebar-actions">
@@ -511,5 +511,6 @@ export function NotesSidebar({
         )}
       </div>
     </aside>
+    
   );
 }
