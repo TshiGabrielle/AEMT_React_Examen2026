@@ -343,6 +343,20 @@ export function NotesLayout() {
   }
 
 
+  //Fonction gérer lien interne clicqué
+  function handleInternalLinkClick(noteTitle: string) {
+    const id = findNoteIdByTitle(noteTitle);
+
+    if (id === null) {
+      alert(`La note "${noteTitle}" n'existe pas`);
+      return;
+    }
+    loadNote(id);
+  }
+
+
+
+  
   return (
     <div className="app">
       <header className="header" style={{ display: 'flex', alignItems: 'center' }}>
