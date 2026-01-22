@@ -175,7 +175,7 @@ export function NotesLayout() {
     'ctrl+shift+k',
     (event:any) => {
       event.preventDefault();
-      setContent((prev) => prev + "[texte du lien](/chemin-interne)");
+      setContent((prev) => prev + "[[nom de la note]]");
     }
     , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
   );
