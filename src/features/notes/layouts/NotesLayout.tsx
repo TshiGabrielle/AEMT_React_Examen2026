@@ -67,7 +67,7 @@ export function NotesLayout() {
     (event: any) => {
       event.preventDefault();
       console.log("Création d'une nouvelle note via Ctrl+N");
-      handleCreateNote(selectedFolderId);
+      handleCreateNoteRequest(selectedFolderId);
     }, 
     {
       enableOnFormTags: true,

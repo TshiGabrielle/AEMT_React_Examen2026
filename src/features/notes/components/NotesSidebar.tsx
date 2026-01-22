@@ -3,6 +3,7 @@ import type { Folder, FolderNote } from '../../../services/FoldersService.js';
 import { InputModal } from './InputModal.js';
 import { ConfirmModal } from './ConfirmModal.js';
 import { FoldersExportService } from '../../../services/FoldersExportService.js';
+import { Modal } from './Modal.js';
 import { useHotkeys } from 'react-hotkeys-hook';
 import lamp from '../../../assets/lamp.png';
 
@@ -41,9 +42,9 @@ interface FolderTreeProps {
   hoveredFolderId: number | null;
   setHoveredFolderId: (id: number | null) => void;
   onExpandFolder: (folderId: number) => void;
-  onDeleteNoteRequest?: (id: number, name: string) => void;
-  openMenuId?: number | null;
-  setOpenMenuId?: (id: number | null) => void;
+  onDeleteNoteRequest: (id: number, name: string) => void;
+  openMenuId: number | null;
+  setOpenMenuId: (id: number | null) => void;
   onFolderSelect?: (folderId: number) => void;
 }
 
@@ -90,7 +91,7 @@ function FolderTree({
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
-        setOpenMenuId?.(null);
+        setOpenMenuId(null);
       }
     };
 
@@ -160,7 +161,7 @@ function FolderTree({
             onClick={(e) => {
               e.stopPropagation();
               // Fermer tous les autres menus d'abord
-              setOpenMenuId?.(null);
+      setOpenMenuId(null);
               // Puis ouvrir/fermer ce menu
               setShowMenu(!showMenu);
             }}
@@ -177,7 +178,7 @@ function FolderTree({
                   onExpandFolder?.(folder.id); // Ouvrir le dossier avant de créer la note
                   onCreateNoteInFolder?.(folder.id);
                   setShowMenu(false);
-                  setOpenMenuId?.(null);
+                  setOpenMenuId(null);
                 }}
                 className="menu-item"
               >
@@ -188,7 +189,7 @@ function FolderTree({
                   e.stopPropagation();
                   onCreateFolder?.(folder.id);
                   setShowMenu(false);
-                  setOpenMenuId?.(null);
+                  setOpenMenuId(null);
                 }}
                 className="menu-item"
               >
@@ -200,7 +201,7 @@ function FolderTree({
                   e.stopPropagation();
                   handleRename?.();
                   setShowMenu(false);
-                  setOpenMenuId?.(null);
+                  setOpenMenuId(null);
                 }}
                 className="menu-item"
               >
@@ -211,7 +212,7 @@ function FolderTree({
                   e.stopPropagation();
                   handleDeleteFolder?.(folder.id);
                   setShowMenu(false);
-                  setOpenMenuId?.(null);
+                  setOpenMenuId(null);
                 }}
                 className="menu-item menu-item-danger"
               >
@@ -222,7 +223,7 @@ function FolderTree({
                   e.stopPropagation();
                   handleExportFolder(folder.id);
                   setShowMenu(false);
-                  setOpenMenuId?.(null);
+                  setOpenMenuId(null);
                 }}
                 className="menu-item"
               >
@@ -269,7 +270,7 @@ function FolderTree({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDeleteNoteRequest?.(note.id, note.name);
+                  onDeleteNoteRequest(note.id, note.name);
                 }}
                 className="btn-delete"
                 title="Supprimer la note"
@@ -298,7 +299,7 @@ function FolderTree({
                 setHoveredFolderId={setHoveredFolderId}
                 onExpandFolder={onExpandFolder}
                 onDeleteNoteRequest={onDeleteNoteRequest}
-                openMenuId={openMenuId}
+                openMenuId={openMenuId ?? null}
                 setOpenMenuId={setOpenMenuId}
               />
             ))}
@@ -331,6 +332,7 @@ export function NotesSidebar({
   const previousFoldersRef = useRef<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const safeDeleteNoteRequest = onDeleteNoteRequest ?? (() => {});
 
   function findFolderNameById(folders: Folder[], id: number): string | null {
   for (const f of folders) {
@@ -417,10 +419,11 @@ export function NotesSidebar({
   };
 
   return (
+    <>
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-title-section">
-          <h2 align="center">📚 Mes Notes</h2>
+          <h2 style={{ textAlign: 'center' }}>📚 Mes Notes</h2>
           <button className="btn-help" onClick={() => setShowShortcuts(true)}>
             <img src={lamp} alt="Astuces raccourcis" />
           </button>
@@ -455,7 +458,7 @@ export function NotesSidebar({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onDeleteNoteRequest?.(note.id, note.name);
+                    safeDeleteNoteRequest(note.id, note.name);
                   }}
                   className="btn-delete"
                   title="Supprimer la note"
@@ -486,7 +489,7 @@ export function NotesSidebar({
                 hoveredFolderId={hoveredFolderId}
                 setHoveredFolderId={setHoveredFolderId}
                 onExpandFolder={expandFolder}
-                onDeleteNoteRequest={onDeleteNoteRequest}
+                onDeleteNoteRequest={safeDeleteNoteRequest}
                 openMenuId={openMenuId}
                 setOpenMenuId={setOpenMenuId}
                 onFolderSelect={(id) => setSelectedFolderId(id)}
@@ -511,6 +514,36 @@ export function NotesSidebar({
         )}
       </div>
     </aside>
-    
+    <Modal
+      isOpen={showShortcuts}
+      onClose={() => setShowShortcuts(false)}
+      title="Raccourcis clavier"
+    >
+      <div className="shortcuts-modal">
+        <p className="shortcuts-intro">
+          Voici les raccourcis disponibles dans l'application :
+        </p>
+        <ul className="shortcuts-list">
+          <li><span className="shortcut-key">CTRL + E</span>Exporter une note PDF</li>
+          <li><span className="shortcut-key">CTRL + S</span>Sauvegarder une note</li>
+          <li><span className="shortcut-key">CTRL + SHIFT + E</span>Exporter une note ZIP</li>
+          <li><span className="shortcut-key">ALT + N</span>Créer une nouvelle note</li>
+          <li><span className="shortcut-key">ALT + SHIFT + N</span>Créer un nouveau dossier</li>
+          <li><span className="shortcut-key">CTRL + DELETE</span>Supprimer une note</li>
+          <li><span className="shortcut-key">CTRL + SHIFT + DELETE</span>Supprimer un dossier</li>
+          <li><span className="shortcut-key">CTRL + F</span>Exporter un dossier ZIP</li>
+          <li><span className="shortcut-key">CTRL + B</span>Texte en gras</li>
+          <li><span className="shortcut-key">CTRL + I</span>Texte italique</li>
+          <li><span className="shortcut-key">CTRL + 1</span>Titre</li>
+          <li><span className="shortcut-key">CTRL + 2</span>Sous-titre</li>
+          <li><span className="shortcut-key">CTRL + 3</span>Sous-sous-titre</li>
+          <li><span className="shortcut-key">CTRL + SHIFT + L</span>Liste</li>
+          <li><span className="shortcut-key">CTRL + K</span>Lien externe</li>
+          <li><span className="shortcut-key">CTRL + SHIFT + K</span>Lien interne</li>
+          <li><span className="shortcut-key">CTRL + SHIFT + C</span>Code</li>
+        </ul>
+      </div>
+    </Modal>
+    </>
   );
 }

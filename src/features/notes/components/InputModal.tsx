@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Modal } from './Modal';
+import { Modal } from './Modal.js';
 
 interface InputModalProps {
   isOpen: boolean;

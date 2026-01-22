@@ -966,6 +966,50 @@ body {
   margin-top: 0.5rem;
 }
 
+/* Raccourcis clavier */
+.shortcuts-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shortcuts-intro {
+  color: #f0e6ff;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.shortcuts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.shortcuts-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #f0e6ff;
+  font-size: 0.92rem;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(138, 43, 226, 0.25);
+  border: 1px solid rgba(138, 43, 226, 0.5);
+  color: #ff8c00;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+  min-width: 140px;
+}
+
 .modal-btn {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
