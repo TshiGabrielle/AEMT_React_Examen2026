@@ -2,7 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
-import rehypeSanitize from "rehype-sanitize";
+
 
 interface Props {
   content: string;
@@ -22,7 +22,7 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkDirective]}
-      rehypePlugins={[rehypeSanitize]}
+      
       components={{
         a({ href, children }) {
           if (href?.startsWith("internal:")) {
