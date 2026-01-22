@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import type { Folder, FolderNote } from '../../../services/FoldersService.js';
 import { InputModal } from './InputModal.js';
 import { ConfirmModal } from './ConfirmModal.js';
+import { FoldersExportService } from '../../../services/FoldersExportService.js';
+
+// instance du service d'exportation pour les dossiers
+const foldersExportService = new FoldersExportService();
 
 interface Props {
   folders: Folder[];          // Dossiers organisés en arbre
@@ -111,6 +115,15 @@ function FolderTree({
     onDeleteFolder?.(folder.id);
   };
 
+  async function handleExportFolder() {
+    const blob = await foldersExportService.downloadZip(folder.id);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${folder.name || "dossier"}.zip`;
+    a.click();
+  }
+
   return (
     <div className="folder-block">
       <div
@@ -186,6 +199,17 @@ function FolderTree({
                 className="menu-item menu-item-danger"
               >
                 🗑️ Supprimer
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExportFolder();
+                  setShowMenu(false);
+                  setOpenMenuId?.(null);
+                }}
+                className="menu-item"
+              >
+                📦 Exporter
               </button>
             </div>
           )}

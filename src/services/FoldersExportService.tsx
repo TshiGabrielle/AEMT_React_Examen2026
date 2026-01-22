@@ -8,6 +8,6 @@ export class FoldersExportService {
       throw new Error("Erreur lors de l'export du dossier");
     }
 
-    return await res.blob(); // on récupère le ZIP en binaire
+    return await res.blob(); // on récupère le zip en binaire
   }
 }
