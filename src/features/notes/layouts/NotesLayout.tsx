@@ -116,7 +116,33 @@ export function NotesLayout() {
     }
     , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
   );
-  
+  // titre (h1)
+  useHotkeys(
+    'ctrl+1',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "# Titre 1\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // titre h2 
+  useHotkeys(
+    'ctrl+2',
+    (event:any) => {  
+      event.preventDefault();
+      setContent((prev) => prev + "## Titre 2\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // titre h3
+  useHotkeys(
+    'ctrl+3',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "### Titre 3\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
 
   useEffect(() => {
     if (selectedNote) {
