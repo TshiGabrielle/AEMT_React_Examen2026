@@ -3,6 +3,7 @@ import type { Folder, FolderNote } from '../../../services/FoldersService.js';
 import { InputModal } from './InputModal.js';
 import { ConfirmModal } from './ConfirmModal.js';
 import { FoldersExportService } from '../../../services/FoldersExportService.js';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 // instance du service d'exportation pour les dossiers
 const foldersExportService = new FoldersExportService();
@@ -70,7 +71,18 @@ function FolderTree({
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<number | null>(null);
 
+  useHotkeys(
+    'ctrl+shift+delete',
+    (e:any) => {
+      e.preventDefault();
+      if (selectedFolderId !== null) {
+        handleDeleteFolder(selectedFolderId);
+      }
+    }
+  );
   // Fermer ce menu si un autre menu est ouvert
   useEffect(() => {
     if (openMenuId !== null && openMenuId !== folder.id && showMenu) {
@@ -110,13 +122,18 @@ function FolderTree({
     }
   };
 
-  const handleDeleteFolder = () => {
+  const handleDeleteFolder = (id: number) => {
+    setFolderToDelete(id);
     setShowDeleteModal(true);
   };
 
+
   const handleDeleteConfirm = () => {
-    onDeleteFolder?.(folder.id);
+    if (folderToDelete !== null) {
+      onDeleteFolder?.(folderToDelete);
+    }
   };
+
 
   async function handleExportFolder() {
     const blob = await foldersExportService.downloadZip(folder.id);
@@ -134,6 +151,7 @@ function FolderTree({
         onClick={() => {
           toggleFolder(folder.id)
           onFolderSelect?.(folder.id);
+          setSelectedFolderId(folder.id);
         }}
         onMouseEnter={() => setHoveredFolderId(folder.id)}
         onMouseLeave={() => setHoveredFolderId(null)}
@@ -198,7 +216,7 @@ function FolderTree({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteFolder?.();
+                  handleDeleteFolder?.(folder.id);
                   setShowMenu(false);
                   setOpenMenuId?.(null);
                 }}
