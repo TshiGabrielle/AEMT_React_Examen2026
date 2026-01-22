@@ -1,8 +1,9 @@
 import React from "react";
 import { NotesExportService } from "../../../services/NotesExportService.js";
 import { useState, useEffect } from "react";
-import { NoteLinksRenderer } from "./NoteLinks.js";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
@@ -107,6 +108,29 @@ export function NotesEditor({
     setStats({ chars, words, lines, bytes });
   }
 
+  // ==== RACCOURCIS CLAVIER ====
+  // exportation pdf (note)
+  useHotkeys(
+    "ctrl+e",
+    (event:any) => {
+      event.preventDefault();
+      if (noteId) {
+        handleDownloadPdf();
+      }
+    }
+  );
+
+  // exportation zip (note)
+  useHotkeys(
+    "ctrl+shift+e",
+    (event:any) => {
+      event.preventDefault();
+      if (noteId) {
+        handleDownloadZip();
+      }
+    }
+  );
+  
   // À chaque changement du contenu → recalcule les stats
   useEffect(() => {
     computeStats(content);

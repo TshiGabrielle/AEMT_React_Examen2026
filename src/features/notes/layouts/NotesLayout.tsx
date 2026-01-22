@@ -9,6 +9,7 @@ import { ConfirmModal } from '../components/ConfirmModal.js';
 import { ModeSwitch } from '../components/ModeSwitch.js';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../../services/AuthService.js';
+import { useHotkeys } from "react-hotkeys-hook";
 
 export function NotesLayout() {
   const {
@@ -39,8 +40,145 @@ export function NotesLayout() {
   const [createFolderParentId, setCreateFolderParentId] = useState<number | null>(null);
   const [showDeleteNoteModal, setShowDeleteNoteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
 
   const navigate = useNavigate();
+
+  // ====== RACCOURCIS ======
+  // sauvegarder une note
+  useHotkeys(
+    'ctrl+s',
+    (event:any) => {
+      event.preventDefault();
+      console.log('Sauvegarde via Ctrl+S');
+      if (selectedNote) {
+        handleSave();
+      }
+    },
+    {
+      enableOnFormTags: true, 
+    }
+  );
+  // créer une nvl note
+  useHotkeys(
+    'alt+n',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Création d'une nouvelle note via Ctrl+N");
+      handleCreateNote(selectedFolderId);
+    }, 
+    {
+      enableOnFormTags: true,
+      preventDefault: true
+    }
+  );
+  // créer un nv dossier
+  useHotkeys(
+    'alt+shift+n',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Création d'un nouveau dossier via Ctrl+Shift+N");
+      setCreateFolderParentId(selectedFolderId);
+      setShowCreateFolderModal(true);
+    }
+  );
+  // supprimer une note
+  useHotkeys(
+    'ctrl+delete',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Suppression de la note via Ctrl+Delete");
+
+      if (selectedNote) {
+        handleDeleteNoteRequest(selectedNote.id, selectedNote.name);
+      }
+    }
+  );
+
+  // ====== RACCOURCIS MARKDOWN ======
+  // gras
+  useHotkeys(
+    'ctrl+b',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "**texte**");
+      //console.log("Gras via Ctrl+B");
+    },
+    { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // italique
+  useHotkeys(
+    'ctrl+i',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "*texte*");
+      //console.log("Italique via Ctrl+I");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // titre (h1)
+  useHotkeys(
+    'ctrl+1',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "# Titre 1\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // titre h2 
+  useHotkeys(
+    'ctrl+2',
+    (event:any) => {  
+      event.preventDefault();
+      setContent((prev) => prev + "## Titre 2\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // titre h3
+  useHotkeys(
+    'ctrl+3',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "### Titre 3\n");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // liste
+  useHotkeys(
+    'ctrl+shift+l',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "- Élément de liste\n");
+    } 
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // code inline
+  useHotkeys(
+    'ctrl+shift+c',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "`code inline`");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // lien externe
+  useHotkeys(
+    'ctrl+k',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "[texte du lien](https://exemple.com)");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // lien interne
+  useHotkeys(
+    'ctrl+shift+k',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "[[nom de la note]]");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
 
   useEffect(() => {
     if (selectedNote) {
@@ -464,6 +602,7 @@ export function NotesLayout() {
             onDeleteFolder={handleDeleteFolder}
             onDeleteNoteRequest={handleDeleteNoteRequest}
             onExpandFolderRef={handleExpandFolderRef}
+            onFolderSelect={(folderId) => setSelectedFolderId(folderId)}
           />
         )}
 
