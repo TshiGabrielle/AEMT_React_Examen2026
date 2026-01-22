@@ -152,6 +152,15 @@ export function NotesLayout() {
     } 
     , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
   );
+  // code inline
+  useHotkeys(
+    'ctrl+shift+c',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "`code inline`");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
 
   useEffect(() => {
     if (selectedNote) {
