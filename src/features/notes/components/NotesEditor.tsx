@@ -1,5 +1,5 @@
 import { NotesExportService } from "../../../services/NotesExportService.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -85,6 +85,17 @@ export function NotesEditor({
       event.preventDefault();
       if (noteId) {
         handleDownloadPdf();
+      }
+    }
+  );
+
+  // exportation zip (note)
+  useHotkeys(
+    "ctrl+shift+e",
+    (event:any) => {
+      event.preventDefault();
+      if (noteId) {
+        handleDownloadZip();
       }
     }
   );
