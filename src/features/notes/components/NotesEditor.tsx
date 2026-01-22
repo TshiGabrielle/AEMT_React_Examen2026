@@ -17,7 +17,8 @@ interface Props {
   onContentChange: (v: string) => void; // callback modification du contenu
   onSave: () => void;               // action lors du clic "Enregistrer"
   noteId: number;                   // ID de la note courante
-  updatedAt:string;
+  updatedAt:string;                // date de dernière modification
+  onInternalLinkClick: (noteTitle: string) => void; // callback clic lien interne
 }
 
 // Petite fenêtre d'aide Markdown
@@ -52,7 +53,8 @@ export function NotesEditor({
   onContentChange,
   onSave,
   noteId,
-  updatedAt
+  updatedAt,
+  onInternalLinkClick
 }: Props) {
 
   // Métadonnées : mots, lignes, etc.
@@ -182,13 +184,12 @@ export function NotesEditor({
             borderLeft: "2px solid #ff8c00"
           }}
         >
+
           <NoteLinksRenderer
-            content={content}
-            onInternalLinkClick={(noteTitle) => {
-            console.log("Lien interne vers :", noteTitle);
-            }
-          }
+          content={content}
+          onInternalLinkClick={onInternalLinkClick}
           />
+
 
         </div>
       </div>

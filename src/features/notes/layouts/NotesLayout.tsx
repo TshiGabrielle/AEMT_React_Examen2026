@@ -477,6 +477,7 @@ export function NotesLayout() {
             onSave={handleSave}
             noteId={selectedNote.id}
             updatedAt ={selectedNote.updated_at}
+            onInternalLinkClick={handleInternalLinkClick}
           />
         ) : (
           <EmptyState />
