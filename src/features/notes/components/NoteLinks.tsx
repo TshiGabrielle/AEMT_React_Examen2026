@@ -10,6 +10,7 @@ interface Props {
 }
 
 export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
+  const safeContent = typeof content === "string" ? content : "";
 
   // Transformer [[Note]] en <a>
   function transformInternalLinks(text: string) {
@@ -22,9 +23,19 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkDirective]}
+      // Autorise le protocole "internal:" pour les liens internes
+      urlTransform={(uri: string) => {
+        // Garder les liens internes tels quels
+        if (uri.startsWith("internal:")) {
+          return uri;
+        }
+        // Conserver les autres liens normalement
+        return uri;
+      }}
       
       components={{
         a({ href, children }) {
+          // Gérer les liens internes vers une note
           if (href?.startsWith("internal:")) {
             const noteTitle = decodeURIComponent(
                 href.replace("internal:", "")
@@ -44,7 +55,7 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
             );
           }
 
-          // lien externe normal
+          // Lien externe normal
           return (
             <a href={href} target="_blank" rel="noopener noreferrer">
               {children}
@@ -53,7 +64,7 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
         }
       }}
     >
-      {transformInternalLinks(content)}
+      {transformInternalLinks(safeContent)}
     </ReactMarkdown>
   );
 }

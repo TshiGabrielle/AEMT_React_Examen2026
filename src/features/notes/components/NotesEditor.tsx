@@ -1,13 +1,40 @@
+import React from "react";
 import { NotesExportService } from "../../../services/NotesExportService.js";
 import { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeSanitize from "rehype-sanitize";
 import { NoteLinksRenderer } from "./NoteLinks.js";
 
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
+
+class MarkdownErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error("Erreur rendu Markdown:", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="markdown-preview-error">
+          Erreur lors de l'affichage du Markdown.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface Props {
   isEditMode: boolean;              // mode édition ou lecture
@@ -17,7 +44,8 @@ interface Props {
   onContentChange: (v: string) => void; // callback modification du contenu
   onSave: () => void;               // action lors du clic "Enregistrer"
   noteId: number;                   // ID de la note courante
-  updatedAt:string;                // date de dernière modification
+  updatedAt: string;                // date de dernière modification
+  createdAt: string;                // date de création
   onInternalLinkClick: (noteTitle: string) => void; // callback clic lien interne
 }
 
@@ -54,6 +82,7 @@ export function NotesEditor({
   onSave,
   noteId,
   updatedAt,
+  createdAt,
   onInternalLinkClick
 }: Props) {
 
@@ -83,13 +112,6 @@ export function NotesEditor({
     computeStats(content);
   }, [content]);
 
-  // Balises HTML autorisées dans le Markdown (sécurité)
-  const allowed = [
-    "p", "strong", "em", "h1", "h2", "h3",
-    "ul", "ol", "li", "a", "code", "pre",
-    "blockquote", "br"
-  ];
-
   async function handleDownloadPdf() {
     const blob = await notesExportService.downloadPdf(noteId);
     const url = URL.createObjectURL(blob);
@@ -108,15 +130,18 @@ export function NotesEditor({
     a.click();
   }
 
-  const formattedDate = new Date(updatedAt).toLocaleString("fr-BE", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  });
+  const formatDate = (value: string) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleString("fr-BE", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
 
-  const formattedCreatedDate = new Date(createdAt).toLocaleString("fr-BE", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  });
+  const formattedDate = formatDate(updatedAt);
+  const formattedCreatedDate = formatDate(createdAt);
 
   // Fonction pour afficher la notification de succès
   function handleSaveWithFeedback() {
@@ -190,11 +215,12 @@ export function NotesEditor({
           }}
         >
 
-          <NoteLinksRenderer
-          content={content}
-          onInternalLinkClick={onInternalLinkClick}
-          />
-
+          <MarkdownErrorBoundary>
+            <NoteLinksRenderer
+              content={content}
+              onInternalLinkClick={onInternalLinkClick}
+            />
+          </MarkdownErrorBoundary>
 
         </div>
       </div>

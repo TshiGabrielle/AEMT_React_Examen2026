@@ -81,8 +81,8 @@ export function useNotes() {
         content_markdown: data.content_markdown || '',
         content_html: data.content_html || '',
         folderId: data.folderId,  // Le backend utilise folderId
-        created_at: data.created_at || '',
-        updated_at: data.updated_at || '',
+        created_at: data.created_at ?? data.createdAt ?? '',
+        updated_at: data.updated_at ?? data.updatedAt ?? '',
         taille_octet: data.taille_octet || 0,
         nblines: data.nblines || 0,
         nbmots: data.nbmots || 0,

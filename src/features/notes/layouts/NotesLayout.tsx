@@ -270,7 +270,7 @@ export function NotesLayout() {
     } catch (error) {
       setError('Erreur lors du renommage du dossier');
       console.error(error);
-    }
+     }
   };
 
   // Supprimer un dossier
@@ -457,7 +457,7 @@ export function NotesLayout() {
             selectedId={selectedNote?.id}
             onSelect={loadNote}
             onCreate={() => handleCreateNote(null)}
-            onDelete={handleDeleteNoteRequest}
+            onDelete={(id) => handleDeleteNoteRequest(id, "")}
             onCreateFolder={handleCreateFolder}
             onCreateNoteInFolder={(folderId) => handleCreateNote(folderId)}
             onRenameFolder={handleRenameFolder}
@@ -476,7 +476,8 @@ export function NotesLayout() {
             onContentChange={setContent}
             onSave={handleSave}
             noteId={selectedNote.id}
-            updatedAt ={selectedNote.updated_at}
+            updatedAt={selectedNote.updated_at}
+            createdAt={selectedNote.created_at}
             onInternalLinkClick={handleInternalLinkClick}
           />
         ) : (
