@@ -15,7 +15,8 @@ interface Props {
   onContentChange: (v: string) => void; // callback modification du contenu
   onSave: () => void;               // action lors du clic "Enregistrer"
   noteId: number;                   // ID de la note courante
-  updatedAt:string;
+  updatedAt: string;
+  createdAt: string;
 }
 
 // Petite fenêtre d'aide Markdown
@@ -50,7 +51,8 @@ export function NotesEditor({
   onContentChange,
   onSave,
   noteId,
-  updatedAt
+  updatedAt,
+  createdAt
 }: Props) {
 
   // Métadonnées : mots, lignes, etc.
@@ -105,6 +107,11 @@ export function NotesEditor({
   }
 
   const formattedDate = new Date(updatedAt).toLocaleString("fr-BE", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  });
+
+  const formattedCreatedDate = new Date(createdAt).toLocaleString("fr-BE", {
   dateStyle: "medium",
   timeStyle: "short",
   });
@@ -193,6 +200,7 @@ export function NotesEditor({
       {/* Métadonnées */}
       <div className="metadata-panel">
         <p><strong>Dernière modification :</strong> {formattedDate}</p>
+        <p><strong>Date de création :</strong> {formattedCreatedDate}</p>
         <p><strong>Lignes :</strong> {stats.lines}</p>
         <p><strong>Mots :</strong> {stats.words}</p>
         <p><strong>Caractères :</strong> {stats.chars}</p>

@@ -435,7 +435,8 @@ export function NotesLayout() {
             onContentChange={setContent}
             onSave={handleSave}
             noteId={selectedNote.id}
-            updatedAt ={selectedNote.updated_at}
+            updatedAt={selectedNote.updated_at}
+            createdAt={selectedNote.created_at}
           />
         ) : (
           <EmptyState />
