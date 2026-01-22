@@ -316,6 +316,47 @@ export function NotesLayout() {
     navigate('/auth/login');
   }
 
+  //Fonction pour trouver note par titre et retourner son ID
+  function findNoteIdByTitle(title: string): number | null {
+
+    // 1) Chercher dans les notes racines
+    const root = rootNotes.find(
+    n => n.name.toLowerCase() === title.toLowerCase()
+    );
+    if (root) return root.id;
+
+    // 2) Chercher récursivement dans les dossiers
+    const searchInFolders = (folders: Folder[]): number | null => {
+      for (const folder of folders) {
+        const found = folder.notes.find(
+          n => n.name.toLowerCase() === title.toLowerCase()
+        );
+        if (found) return found.id;
+
+        const child = searchInFolders(folder.children);
+        if (child !== null) return child;
+      }
+      return null;
+    };
+
+    return searchInFolders(folders);
+  }
+
+
+  //Fonction gérer lien interne clicqué
+  function handleInternalLinkClick(noteTitle: string) {
+    const id = findNoteIdByTitle(noteTitle);
+
+    if (id === null) {
+      alert(`La note "${noteTitle}" n'existe pas`);
+      return;
+    }
+    loadNote(id);
+  }
+
+
+
+  
   return (
     <div className="app">
       <header className="header" style={{ display: 'flex', alignItems: 'center' }}>
@@ -435,8 +476,8 @@ export function NotesLayout() {
             onContentChange={setContent}
             onSave={handleSave}
             noteId={selectedNote.id}
-            updatedAt={selectedNote.updated_at}
-            createdAt={selectedNote.created_at}
+            updatedAt ={selectedNote.updated_at}
+            onInternalLinkClick={handleInternalLinkClick}
           />
         ) : (
           <EmptyState />

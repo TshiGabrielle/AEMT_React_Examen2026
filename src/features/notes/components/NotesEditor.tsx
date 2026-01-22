@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { NoteLinksRenderer } from "./NoteLinks.js";
+
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
@@ -15,8 +17,8 @@ interface Props {
   onContentChange: (v: string) => void; // callback modification du contenu
   onSave: () => void;               // action lors du clic "Enregistrer"
   noteId: number;                   // ID de la note courante
-  updatedAt: string;
-  createdAt: string;
+  updatedAt:string;                // date de dernière modification
+  onInternalLinkClick: (noteTitle: string) => void; // callback clic lien interne
 }
 
 // Petite fenêtre d'aide Markdown
@@ -52,7 +54,7 @@ export function NotesEditor({
   onSave,
   noteId,
   updatedAt,
-  createdAt
+  onInternalLinkClick
 }: Props) {
 
   // Métadonnées : mots, lignes, etc.
@@ -187,13 +189,13 @@ export function NotesEditor({
             borderLeft: "2px solid #ff8c00"
           }}
         >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSanitize]}
-            allowedElements={allowed}
-          >
-            {content}
-          </ReactMarkdown>
+
+          <NoteLinksRenderer
+          content={content}
+          onInternalLinkClick={onInternalLinkClick}
+          />
+
+
         </div>
       </div>
 
