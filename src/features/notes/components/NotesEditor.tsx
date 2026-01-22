@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { useHotkeys } from "react-hotkeys-hook";
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
@@ -76,6 +77,18 @@ export function NotesEditor({
     setStats({ chars, words, lines, bytes });
   }
 
+  // ==== RACCOURCIS CLAVIER ====
+  // exportation pdf (note)
+  useHotkeys(
+    "ctrl+e",
+    (event:any) => {
+      event.preventDefault();
+      if (noteId) {
+        handleDownloadPdf();
+      }
+    }
+  );
+  
   // À chaque changement du contenu → recalcule les stats
   useEffect(() => {
     computeStats(content);
