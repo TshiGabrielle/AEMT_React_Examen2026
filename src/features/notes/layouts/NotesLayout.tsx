@@ -72,7 +72,17 @@ export function NotesLayout() {
       preventDefault: true
     }
   );
-
+  // créer un nv dossier
+  useHotkeys(
+    'alt+shift+n',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Création d'un nouveau dossier via Ctrl+Shift+N");
+      setCreateFolderParentId(selectedFolderId);
+      setShowCreateFolderModal(true);
+    }
+  );
+  
   useEffect(() => {
     if (selectedNote) {
       setTitle(selectedNote.name);
