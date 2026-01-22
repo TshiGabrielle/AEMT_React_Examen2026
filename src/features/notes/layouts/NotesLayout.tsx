@@ -143,6 +143,15 @@ export function NotesLayout() {
     }
     , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
   );
+  // liste
+  useHotkeys(
+    'ctrl+shift+l',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "- Élément de liste\n");
+    } 
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
 
   useEffect(() => {
     if (selectedNote) {
