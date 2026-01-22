@@ -62,6 +62,7 @@ body {
 
 .mode-switch {
   display: flex;
+  display : flex;
   align-items: center;
   gap: 0.6rem;
   background: transparent;
@@ -308,6 +309,34 @@ body {
   transform: scale(1.2);
 }
 
+/* Bouton déconnexion (réutilisé sur auth) */
+.btn-logout {
+  background: linear-gradient(135deg, #8a2be2 0%, #0b9630 100%);
+  color: #fff;
+  border: 2px solid rgba(255, 140, 0, 0.35);
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(176, 0, 32, 0.35);
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #2163be2f 0%, #067f65 100%);
+  border-color: #ff8c00;
+  border-color : #ff8c00;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(176, 0, 32, 0.45);
+}
+
+  
+.btn-logout:active {
+  transform: translateY(0);
+  
+}
+
 /* EDITOR */
 .editor {
   flex: 1;
@@ -397,7 +426,15 @@ body {
   height: 100%;
   overflow-y: auto;
   background: rgba(0, 0, 0, 0.2);
-  color : white
+  color : white;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-preview pre,
+.markdown-preview code {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .markdown-preview h1 {

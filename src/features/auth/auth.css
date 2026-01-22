@@ -7,7 +7,17 @@
   align-items: center;
   justify-content: center;
 
-  background-color: #0e0e12;
+  background-color: #0b0416;
+  background-image:
+    radial-gradient(1000px 600px at 10% 10%, rgba(138, 43, 226, 0.18), transparent 55%),
+    radial-gradient(900px 500px at 90% 20%, rgba(255, 140, 0, 0.12), transparent 60%),
+    radial-gradient(700px 500px at 20% 80%, rgba(255, 105, 180, 0.10), transparent 65%),
+    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.22), transparent 60%),
+    radial-gradient(1.5px 1.5px at 35% 65%, rgba(255, 255, 255, 0.18), transparent 60%),
+    radial-gradient(1px 1px at 70% 35%, rgba(255, 255, 255, 0.14), transparent 60%),
+    radial-gradient(2px 2px at 85% 75%, rgba(255, 255, 255, 0.20), transparent 60%),
+    linear-gradient(135deg, #120026 0%, #0b0416 45%, #0d0015 100%);
+  background-attachment: fixed;
   color: #f2f2f2;
   font-family: system-ui, sans-serif;
 }
@@ -20,14 +30,14 @@
   max-width: 420px;
   padding: 2.5rem;
 
-  background-color: #16161d;
+  background: linear-gradient(135deg, rgba(45, 27, 78, 0.95) 0%, rgba(26, 13, 46, 0.95) 100%);
   border-radius: 12px;
 
   /* légère bordure orange pour rappeler le thème Halloween */
-  border: 1px solid #ff8a2a;
+  border: 2px solid #ff8c00;
 
   /* ombre simple pour détacher la carte du fond */
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 140, 0, 0.25);
 }
 
 /* Titre principal */
@@ -35,7 +45,7 @@
   margin-bottom: 1.5rem;
   text-align: center;
   letter-spacing: 0.05em;
-  color: #ff8a2a;
+  color: #ff8c00;
 }
 
 /*
@@ -49,8 +59,8 @@
   padding: 0.6rem 0.7rem;
   margin-top: 0.3rem;
 
-  background-color: #0f0f14;
-  border: 1px solid #2a2a33;
+  background-color: rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(138, 43, 226, 0.45);
   border-radius: 6px;
 
   color: #eee;
@@ -59,7 +69,8 @@
 /* Mise en évidence du champ actif */
 .auth-card input:focus {
   outline: none;
-  border-color: #ff8a2a;
+  border-color: #ff8c00;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.4);
 }
 
 /*
@@ -70,21 +81,10 @@
 .auth-card button {
   width: 100%;
   margin-top: 1rem;
-  padding: 0.6rem;
-
-  background-color: #ff8a2a;
-  border: none;
-  border-radius: 6px;
-
-  color: #111;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-
-  cursor: pointer;
 }
 
-.auth-card button:hover {
-  background-color: #ffa24d;
+.auth-btn {
+  width: 100%;
 }
 
 /* Texte de navigation (login / register) */
@@ -95,7 +95,7 @@
 }
 
 .auth-switch a {
-  color: #ff8a2a;
+  color: #ff8c00;
   text-decoration: none;
 }
 

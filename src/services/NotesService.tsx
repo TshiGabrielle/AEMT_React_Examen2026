@@ -95,8 +95,8 @@ export function useNotes() {
     }
   }
 
-  // --- Crée une note SANS popup, l'ouvre directement dans l'éditeur
-  async function createNote(folderId: number | null = null) {
+  // --- Crée une note avec nom, l'ouvre directement dans l'éditeur
+  async function createNote(folderId: number | null = null, name = 'Nouvelle note') {
     try {
 
       const userId = AuthService.getUser();
@@ -108,7 +108,7 @@ export function useNotes() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'Nouvelle note',
+          name,
           content_markdown: '',
           idFolder: folderId,
           userId: userId   
@@ -128,8 +128,8 @@ export function useNotes() {
       // Retourner la note créée pour mise à jour locale
       return {
         id: created.id,
-        name: created.name || 'Nouvelle note',
-        title: created.name || 'Nouvelle note',
+        name: created.name || name,
+        title: created.name || name,
         folderId: folderId
       };
     } catch (error) {

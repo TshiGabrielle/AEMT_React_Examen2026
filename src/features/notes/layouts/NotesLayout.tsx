@@ -38,6 +38,8 @@ export function NotesLayout() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [createFolderParentId, setCreateFolderParentId] = useState<number | null>(null);
+  const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
+  const [createNoteParentId, setCreateNoteParentId] = useState<number | null>(null);
   const [showDeleteNoteModal, setShowDeleteNoteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<{ id: number; name: string } | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
@@ -306,10 +308,18 @@ export function NotesLayout() {
     };
   };
 
+  const handleCreateNoteRequest = (folderId: number | null = null) => {
+    setCreateNoteParentId(folderId);
+
+    setShowCreateNoteModal(true);
+  };
+
   // Créer une note avec mise à jour locale
-  const handleCreateNote = async (folderId: number | null = null) => {
+  const handleCreateNoteConfirm = async (name: string) => {
     try {
-      const newNote = await createNote(folderId);
+      const folderId = createNoteParentId;
+      const noteName = name?.trim() || 'Nouvelle note';
+      const newNote = await createNote(folderId, noteName);
       
       if (newNote) {
         // Mise à jour locale de l'arborescence
@@ -324,9 +334,13 @@ export function NotesLayout() {
           }, 50);
         }
       }
+      setShowCreateNoteModal(false);
+      setCreateNoteParentId(null);
     } catch (error) {
       setError('Erreur lors de la création de la note');
       console.error(error);
+      setShowCreateNoteModal(false);
+      setCreateNoteParentId(null);
     }
   };
 
@@ -503,14 +517,7 @@ export function NotesLayout() {
         <div style={{ width: '120px' }}>
           <button
             onClick={handleLogout}
-            style={{
-              background: '#b00020',
-              color: 'white',
-              border: 'none',
-              padding: '0.4rem 0.7rem',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
+            className="btn-logout"
           >
             Déconnexion
           </button>
@@ -560,6 +567,22 @@ export function NotesLayout() {
         cancelText="Annuler"
       />
 
+      {/* Modale pour créer une note */}
+      <InputModal
+        isOpen={showCreateNoteModal}
+        onClose={() => {
+          setShowCreateNoteModal(false);
+          setCreateNoteParentId(null);
+        }}
+        onConfirm={handleCreateNoteConfirm}
+        title="Créer une nouvelle note"
+        label="Nom de la note"
+        placeholder="Entrez le nom de la note..."
+        defaultValue="Nouvelle note"
+        confirmText="Créer"
+        cancelText="Annuler"
+      />
+
       {/* Modale pour supprimer une note */}
       <ConfirmModal
         isOpen={showDeleteNoteModal}
@@ -594,10 +617,10 @@ export function NotesLayout() {
             rootNotes={rootNotes}
             selectedId={selectedNote?.id}
             onSelect={loadNote}
-            onCreate={() => handleCreateNote(null)}
+            onCreate={() => handleCreateNoteRequest(null)}
             onDelete={(id) => handleDeleteNoteRequest(id, "")}
             onCreateFolder={handleCreateFolder}
-            onCreateNoteInFolder={(folderId) => handleCreateNote(folderId)}
+            onCreateNoteInFolder={(folderId) => handleCreateNoteRequest(folderId)}
             onRenameFolder={handleRenameFolder}
             onDeleteFolder={handleDeleteFolder}
             onDeleteNoteRequest={handleDeleteNoteRequest}

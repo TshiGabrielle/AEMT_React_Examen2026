@@ -72,7 +72,7 @@ export default function LoginForm() {
 
       {/* btn de soumission */}
       <div>
-        <button type="submit">Se connecter</button>
+        <button type="submit" className="btn-logout auth-btn">Se connecter</button>
       </div>
 
     </form>
