@@ -95,6 +95,18 @@ export function NotesLayout() {
     }
   );
 
+  // ====== RACCOURCIS MARKDOWN ======
+  useHotkeys(
+    'ctrl+b',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "**texte**");
+      console.log("Gras via Ctrl+B");
+    },
+    { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+
+
   useEffect(() => {
     if (selectedNote) {
       setTitle(selectedNote.name);

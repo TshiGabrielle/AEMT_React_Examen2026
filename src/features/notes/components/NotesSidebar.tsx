@@ -340,30 +340,30 @@ export function NotesSidebar({
 }
 
 
-useHotkeys('ctrl+f', (e: any) => {
-  e.preventDefault();
+  useHotkeys('ctrl+f', (e: any) => {
+    e.preventDefault();
 
-  if (selectedFolderId !== null) {
-    const name = findFolderNameById(folders, selectedFolderId) ?? 'dossier';
+    if (selectedFolderId !== null) {
+      const name = findFolderNameById(folders, selectedFolderId) ?? 'dossier';
 
-    foldersExportService.downloadZip(selectedFolderId).then(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${name}.zip`;
-      a.click();
-    });
-  }
-});
+      foldersExportService.downloadZip(selectedFolderId).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name}.zip`;
+        a.click();
+      });
+    }
+  });
 
 
-useHotkeys('ctrl+shift+delete', (e: any) => {
-  e.preventDefault();
+  useHotkeys('ctrl+shift+delete', (e: any) => {
+    e.preventDefault();
 
-  if (selectedFolderId !== null) {
-    onDeleteFolder?.(selectedFolderId);
-  }
-});
+    if (selectedFolderId !== null) {
+      onDeleteFolder?.(selectedFolderId);
+    }
+  });
 
   
   // Fonction pour ouvrir un dossier (utilisée lors de la création d'une note ou d'un dossier)
