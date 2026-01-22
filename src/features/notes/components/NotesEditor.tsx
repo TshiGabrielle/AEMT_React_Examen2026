@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { NoteLinksRenderer } from "./NoteLinks.js";
+
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
@@ -180,13 +182,14 @@ export function NotesEditor({
             borderLeft: "2px solid #ff8c00"
           }}
         >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSanitize]}
-            allowedElements={allowed}
-          >
-            {content}
-          </ReactMarkdown>
+          <NoteLinksRenderer
+            content={content}
+            onInternalLinkClick={(noteTitle) => {
+            console.log("Lien interne vers :", noteTitle);
+            }
+          }
+          />
+
         </div>
       </div>
 
