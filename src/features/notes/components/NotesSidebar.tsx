@@ -71,18 +71,10 @@ function FolderTree({
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [folderToDelete, setFolderToDelete] = useState<number | null>(null);
 
-  useHotkeys(
-    'ctrl+shift+delete',
-    (e:any) => {
-      e.preventDefault();
-      if (selectedFolderId !== null) {
-        handleDeleteFolder(selectedFolderId);
-      }
-    }
-  );
+
+
   // Fermer ce menu si un autre menu est ouvert
   useEffect(() => {
     if (openMenuId !== null && openMenuId !== folder.id && showMenu) {
@@ -135,14 +127,15 @@ function FolderTree({
   };
 
 
-  async function handleExportFolder() {
-    const blob = await foldersExportService.downloadZip(folder.id);
+  async function handleExportFolder(folderId: number) {
+    const blob = await foldersExportService.downloadZip(folderId);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${folder.name || "dossier"}.zip`;
+    a.download = `${folder.name}.zip`;
     a.click();
   }
+
 
   return (
     <div className="folder-block">
@@ -151,7 +144,6 @@ function FolderTree({
         onClick={() => {
           toggleFolder(folder.id)
           onFolderSelect?.(folder.id);
-          setSelectedFolderId(folder.id);
         }}
         onMouseEnter={() => setHoveredFolderId(folder.id)}
         onMouseLeave={() => setHoveredFolderId(null)}
@@ -227,7 +219,7 @@ function FolderTree({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleExportFolder();
+                  handleExportFolder(folder.id);
                   setShowMenu(false);
                   setOpenMenuId?.(null);
                 }}
@@ -336,6 +328,43 @@ export function NotesSidebar({
   const [hoveredFolderId, setHoveredFolderId] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const previousFoldersRef = useRef<Folder[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+
+  function findFolderNameById(folders: Folder[], id: number): string | null {
+  for (const f of folders) {
+    if (f.id === id) return f.name;
+    const inChild = findFolderNameById(f.children, id);
+    if (inChild) return inChild;
+  }
+  return null;
+}
+
+
+useHotkeys('ctrl+f', (e: any) => {
+  e.preventDefault();
+
+  if (selectedFolderId !== null) {
+    const name = findFolderNameById(folders, selectedFolderId) ?? 'dossier';
+
+    foldersExportService.downloadZip(selectedFolderId).then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}.zip`;
+      a.click();
+    });
+  }
+});
+
+
+useHotkeys('ctrl+shift+delete', (e: any) => {
+  e.preventDefault();
+
+  if (selectedFolderId !== null) {
+    onDeleteFolder?.(selectedFolderId);
+  }
+});
+
   
   // Fonction pour ouvrir un dossier (utilisée lors de la création d'une note ou d'un dossier)
   const expandFolder = (id: number) => {
@@ -456,7 +485,7 @@ export function NotesSidebar({
                 onDeleteNoteRequest={onDeleteNoteRequest}
                 openMenuId={openMenuId}
                 setOpenMenuId={setOpenMenuId}
-                onFolderSelect={onFolderSelect}
+                onFolderSelect={(id) => setSelectedFolderId(id)}
               />
             ))}
           </>
