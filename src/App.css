@@ -986,3 +986,19 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(176, 0, 32, 0.5), 0 0 20px rgba(255, 69, 0, 0.3);
 }
+
+.btn-help {
+  width: 60px;
+  height: 35px;
+  align-self:center;
+  display: flex;
+  align:center;
+  justify-content: center;
+  margin-top: 7px;
+}
+
+.btn-help img {
+  width: 16px; /* taille réduite */ 
+  height: 16px; /* optionnel */ 
+  object-fit: contain;
+}

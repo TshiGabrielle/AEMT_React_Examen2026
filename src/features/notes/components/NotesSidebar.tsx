@@ -4,6 +4,7 @@ import { InputModal } from './InputModal.js';
 import { ConfirmModal } from './ConfirmModal.js';
 import { FoldersExportService } from '../../../services/FoldersExportService.js';
 import { useHotkeys } from 'react-hotkeys-hook';
+import lamp from '../../../assets/lamp.png';
 
 // instance du service d'exportation pour les dossiers
 const foldersExportService = new FoldersExportService();
@@ -418,8 +419,11 @@ export function NotesSidebar({
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-title-section">
-          <h2>📚 Mes Notes</h2>
-          <p className="sidebar-subtitle">Organisez vos idées</p>
+          <h2 align="center">📚 Mes Notes</h2>
+
+          <button className="btn-help">
+            <img src={lamp} alt="Astuces raccourcis"/>
+          </button>
         </div>
         <div className="sidebar-actions">
           <button onClick={onCreate} className="btn-create btn-create-primary" title="Créer une nouvelle note">
