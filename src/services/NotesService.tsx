@@ -122,11 +122,19 @@ export function useNotes() {
 
       const created = await res.json();
 
-      // rafraîchir la liste et ouvrir la note nouvellement créée
-      await fetchNotes();
+      // Ouvrir la note nouvellement créée
       await loadNote(created.id);
+      
+      // Retourner la note créée pour mise à jour locale
+      return {
+        id: created.id,
+        name: created.name || 'Nouvelle note',
+        title: created.name || 'Nouvelle note',
+        folderId: folderId
+      };
     } catch (error) {
       console.error('Erreur lors de la création de la note:', error);
+      throw error;
     }
   }
 
@@ -157,24 +165,30 @@ export function useNotes() {
     }
   }
 
-  // --- Supprime une note par id
+  // --- Supprime une note par id (sans confirmation - gérée dans le composant)
   async function deleteNote(id: number) {
-    if (!confirm('Supprimer cette note ?')) return;
-
     try {
-
       const userId = AuthService.getUser();
       if (!userId) {
         throw new Error('Utilisateur non connecté');
       }
 
-      await fetch(`${API}/${id}?userId=${userId}`, { method: 'DELETE' });
+      const res = await fetch(`${API}/${id}?userId=${userId}`, { method: 'DELETE' });
+      
+      if (!res.ok) {
+        throw new Error('Erreur lors de la suppression de la note');
+      }
 
       // si la note supprimée était sélectionnée, on vide l'éditeur
-      setSelectedNote(null);
-      await fetchNotes();
+      if (selectedNote?.id === id) {
+        setSelectedNote(null);
+      }
+      
+      // Retourner l'ID pour permettre la mise à jour locale
+      return id;
     } catch (error) {
       console.error('Erreur lors de la suppression de la note:', error);
+      throw error;
     }
   }
 

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Folder, FolderNote } from '../../../services/FoldersService.js';
+import { InputModal } from './InputModal.js';
+import { ConfirmModal } from './ConfirmModal.js';
 
 interface Props {
   folders: Folder[];          // Dossiers organisés en arbre
@@ -12,6 +14,9 @@ interface Props {
   onCreateNoteInFolder?: (folderId: number) => void;
   onRenameFolder?: (folderId: number, newName: string) => void;
   onDeleteFolder?: (folderId: number) => void;
+  onExpandFolder?: (folderId: number) => void; // Callback pour ouvrir un dossier
+  onDeleteNoteRequest?: (id: number, name: string) => void; // Callback pour demander confirmation de suppression
+  onExpandFolderRef?: (expandFn: (id: number) => void) => void; // Callback pour exposer la fonction expandFolder
 }
 
 // --- Rendu récursif d'un dossier ---
@@ -28,6 +33,10 @@ interface FolderTreeProps {
   onDeleteFolder?: ((folderId: number) => void) | undefined;
   hoveredFolderId: number | null;
   setHoveredFolderId: (id: number | null) => void;
+  onExpandFolder?: (folderId: number) => void;
+  onDeleteNoteRequest?: (id: number, name: string) => void;
+  openMenuId?: number | null;
+  setOpenMenuId?: (id: number | null) => void;
 }
 
 function FolderTree({
@@ -42,23 +51,64 @@ function FolderTree({
   onRenameFolder,
   onDeleteFolder,
   hoveredFolderId,
-  setHoveredFolderId
+  setHoveredFolderId,
+  onExpandFolder,
+  onDeleteNoteRequest,
+  openMenuId,
+  setOpenMenuId
 }: FolderTreeProps) {
   const isExpanded = expandedIds.includes(folder.id);
   const isHovered = hoveredFolderId === folder.id;
   const [showMenu, setShowMenu] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Fermer ce menu si un autre menu est ouvert
+  useEffect(() => {
+    if (openMenuId !== null && openMenuId !== folder.id && showMenu) {
+      setShowMenu(false);
+    }
+  }, [openMenuId, folder.id, showMenu]);
+
+  // Fermer le menu quand on clique ailleurs
+  useEffect(() => {
+    if (!showMenu) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+        setOpenMenuId?.(null);
+      }
+    };
+
+    // Petit délai pour éviter de fermer immédiatement après l'ouverture
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 10);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu, setOpenMenuId]);
 
   const handleRename = () => {
-    const newName = prompt('Nouveau nom du dossier:', folder.name);
+    setShowRenameModal(true);
+  };
+
+  const handleRenameConfirm = (newName: string) => {
     if (newName && newName.trim() && newName !== folder.name) {
       onRenameFolder?.(folder.id, newName.trim());
     }
   };
 
   const handleDeleteFolder = () => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder.name}" ?`)) {
-      onDeleteFolder?.(folder.id);
-    }
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDeleteFolder?.(folder.id);
   };
 
   return (
@@ -74,11 +124,14 @@ function FolderTree({
         <span className="folder-name-text">{folder.name}</span>
         
         {/* Menu Burger */}
-        <div className="folder-menu-container">
+        <div className="folder-menu-container" ref={menuRef}>
           <button
             className="btn-folder-menu"
             onClick={(e) => {
               e.stopPropagation();
+              // Fermer tous les autres menus d'abord
+              setOpenMenuId?.(null);
+              // Puis ouvrir/fermer ce menu
               setShowMenu(!showMenu);
             }}
             title="Actions"
@@ -87,12 +140,14 @@ function FolderTree({
           </button>
           
           {showMenu && (
-            <div className="folder-menu-dropdown">
+            <div className="folder-menu-dropdown" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  onExpandFolder?.(folder.id); // Ouvrir le dossier avant de créer la note
                   onCreateNoteInFolder?.(folder.id);
                   setShowMenu(false);
+                  setOpenMenuId?.(null);
                 }}
                 className="menu-item"
               >
@@ -103,6 +158,7 @@ function FolderTree({
                   e.stopPropagation();
                   onCreateFolder?.(folder.id);
                   setShowMenu(false);
+                  setOpenMenuId?.(null);
                 }}
                 className="menu-item"
               >
@@ -114,6 +170,7 @@ function FolderTree({
                   e.stopPropagation();
                   handleRename?.();
                   setShowMenu(false);
+                  setOpenMenuId?.(null);
                 }}
                 className="menu-item"
               >
@@ -124,6 +181,7 @@ function FolderTree({
                   e.stopPropagation();
                   handleDeleteFolder?.();
                   setShowMenu(false);
+                  setOpenMenuId?.(null);
                 }}
                 className="menu-item menu-item-danger"
               >
@@ -133,6 +191,29 @@ function FolderTree({
           )}
         </div>
       </div>
+
+      {/* Modales pour renommer et supprimer */}
+      <InputModal
+        isOpen={showRenameModal}
+        onClose={() => setShowRenameModal(false)}
+        onConfirm={handleRenameConfirm}
+        title="Renommer le dossier"
+        label="Nouveau nom du dossier"
+        placeholder="Entrez le nouveau nom..."
+        defaultValue={folder.name}
+        confirmText="Renommer"
+        cancelText="Annuler"
+      />
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Supprimer le dossier"
+        message={`Êtes-vous sûr de vouloir supprimer le dossier "${folder.name}" ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        danger={true}
+      />
 
       {isExpanded && (
         <>
@@ -147,9 +228,10 @@ function FolderTree({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(note.id);
+                  onDeleteNoteRequest?.(note.id, note.name);
                 }}
                 className="btn-delete"
+                title="Supprimer la note"
               >
                 ❌
               </button>
@@ -173,6 +255,10 @@ function FolderTree({
                 onDeleteFolder={onDeleteFolder}
                 hoveredFolderId={hoveredFolderId}
                 setHoveredFolderId={setHoveredFolderId}
+                onExpandFolder={onExpandFolder}
+                onDeleteNoteRequest={onDeleteNoteRequest}
+                openMenuId={openMenuId}
+                setOpenMenuId={setOpenMenuId}
               />
             ))}
           </div>
@@ -192,10 +278,57 @@ export function NotesSidebar({
   onCreateFolder,
   onCreateNoteInFolder,
   onRenameFolder,
-  onDeleteFolder
+  onDeleteFolder,
+  onExpandFolder,
+  onDeleteNoteRequest,
+  onExpandFolderRef
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
   const [hoveredFolderId, setHoveredFolderId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const previousFoldersRef = useRef<Folder[]>([]);
+  
+  // Fonction pour ouvrir un dossier (utilisée lors de la création d'une note ou d'un dossier)
+  const expandFolder = (id: number) => {
+    if (!expandedIds.includes(id)) {
+      setExpandedIds((current) => [...current, id]);
+    }
+  };
+
+  // Exposer la fonction expandFolder via le callback
+  useEffect(() => {
+    if (onExpandFolderRef) {
+      onExpandFolderRef(expandFolder);
+    }
+  }, [onExpandFolderRef]);
+
+  // Fonction récursive pour obtenir tous les IDs de dossiers
+  const getAllFolderIds = (folders: Folder[]): number[] => {
+    let ids: number[] = [];
+    folders.forEach(folder => {
+      ids.push(folder.id);
+      if (folder.children.length > 0) {
+        ids = ids.concat(getAllFolderIds(folder.children));
+      }
+    });
+    return ids;
+  };
+
+  // Maintenir l'état des dossiers ouverts même après un refresh
+  useEffect(() => {
+    const currentFolderIds = getAllFolderIds(folders);
+    const previousFolderIds = getAllFolderIds(previousFoldersRef.current);
+    
+    // Si les dossiers ont changé mais que certains IDs existent toujours, on les garde ouverts
+    if (previousFoldersRef.current.length > 0) {
+      setExpandedIds((current) => {
+        // Garder seulement les IDs qui existent toujours dans la nouvelle structure
+        return current.filter(id => currentFolderIds.includes(id));
+      });
+    }
+    
+    previousFoldersRef.current = folders;
+  }, [folders]);
 
   const toggleFolder = (id: number) => {
     setExpandedIds((current) =>
@@ -206,17 +339,22 @@ export function NotesSidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>Notes</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <button onClick={onCreate} className="btn-create">
-            📝 Nouvelle note
+        <div className="sidebar-title-section">
+          <h2>📚 Mes Notes</h2>
+          <p className="sidebar-subtitle">Organisez vos idées</p>
+        </div>
+        <div className="sidebar-actions">
+          <button onClick={onCreate} className="btn-create btn-create-primary" title="Créer une nouvelle note">
+            <span className="btn-icon">📝</span>
+            <span className="btn-text">Nouvelle note</span>
           </button>
           <button 
             onClick={() => onCreateFolder?.(null)} 
-            className="btn-create"
-            style={{ background: 'rgba(138, 43, 226, 0.5)' }}
+            className="btn-create btn-create-secondary"
+            title="Créer un nouveau dossier"
           >
-            📁 Nouveau dossier
+            <span className="btn-icon">📁</span>
+            <span className="btn-text">Nouveau dossier</span>
           </button>
         </div>
       </div>
@@ -235,9 +373,10 @@ export function NotesSidebar({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onDelete(note.id);
+                    onDeleteNoteRequest?.(note.id, note.name);
                   }}
                   className="btn-delete"
+                  title="Supprimer la note"
                 >
                   ❌
                 </button>
@@ -264,6 +403,10 @@ export function NotesSidebar({
                 onDeleteFolder={onDeleteFolder}
                 hoveredFolderId={hoveredFolderId}
                 setHoveredFolderId={setHoveredFolderId}
+                onExpandFolder={expandFolder}
+                onDeleteNoteRequest={onDeleteNoteRequest}
+                openMenuId={openMenuId}
+                setOpenMenuId={setOpenMenuId}
               />
             ))}
           </>

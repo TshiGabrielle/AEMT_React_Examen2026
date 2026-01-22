@@ -108,7 +108,6 @@ export function useFolders() {
   // Créer un dossier
   async function createFolder(name: string, parentId: number | null = null) {
     try {
-
       const userId = AuthService.getUser();
       if (!userId) {
         throw new Error('Utilisateur non connecté');
@@ -133,9 +132,16 @@ export function useFolders() {
       const result = await res.json();
       console.log('Dossier créé:', result);
       
-      // Rafraîchir l'arborescence
-      await fetchFolders();
-      return result;
+      // Le backend retourne maintenant les infos du dossier créé
+      if (result.success) {
+        return {
+          id: result.id,
+          name: result.name || name,
+          parentId: result.parentId ?? parentId
+        };
+      }
+
+      throw new Error(result.message || 'Erreur lors de la création du dossier');
     } catch (error) {
       console.error('Erreur lors de la création du dossier:', error);
       throw error;
@@ -144,47 +150,61 @@ export function useFolders() {
 
   // Renommer un dossier
   async function renameFolder(folderId: number, newName: string) {
-  const userId = AuthService.getUser();
-  if (!userId) throw new Error('Utilisateur non connecté');
+    const userId = AuthService.getUser();
+    if (!userId) throw new Error('Utilisateur non connecté');
 
-  const res = await fetch(
-    `${API}/${folderId}?userId=${userId}`,
-    {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName })
+    const res = await fetch(
+      `${API}/${folderId}?userId=${userId}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Erreur renommage dossier:', errorText);
+      throw new Error('Erreur renommage dossier');
     }
-  );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error('Erreur renommage dossier:', errorText);
-    throw new Error('Erreur renommage dossier');
+    // Retourner les données pour mise à jour locale
+    return { folderId, newName };
   }
-
-  await fetchFolders();
-}
 
   // Supprimer un dossier
   async function deleteFolder(folderId: number) {
-  const userId = AuthService.getUser();
-  if (!userId) throw new Error('Utilisateur non connecté');
+    const userId = AuthService.getUser();
+    if (!userId) throw new Error('Utilisateur non connecté');
 
-  const res = await fetch(
-    `${API}/${folderId}?userId=${userId}`,
-    {
-      method: 'DELETE'
+    const res = await fetch(
+      `${API}/${folderId}?userId=${userId}`,
+      {
+        method: 'DELETE'
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Erreur suppression dossier:', errorText);
+      throw new Error('Erreur suppression dossier');
     }
-  );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error('Erreur suppression dossier:', errorText);
-    throw new Error('Erreur suppression dossier');
+    // Retourner l'ID pour mise à jour locale
+    return folderId;
   }
 
-  await fetchFolders();
-}
+  // Fonctions de mise à jour locale (exposées pour permettre les mises à jour depuis l'extérieur)
 
-  return { folders, rootNotes, fetchFolders, loading, createFolder, renameFolder, deleteFolder };
+  return { 
+    folders, 
+    rootNotes, 
+    fetchFolders, 
+    loading, 
+    createFolder, 
+    renameFolder, 
+    deleteFolder,
+    setFolders,
+    setRootNotes
+  };
 }
