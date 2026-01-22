@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { useHotkeys } from "react-hotkeys-hook";
+import { NoteLinksRenderer } from "./NoteLinks.js";
+
 
 // instance du service d’exportation
 const notesExportService = new NotesExportService();
