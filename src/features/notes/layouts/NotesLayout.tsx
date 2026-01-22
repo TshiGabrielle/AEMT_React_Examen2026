@@ -43,20 +43,21 @@ export function NotesLayout() {
 
   const navigate = useNavigate();
 
-  // raccourcis
-useHotkeys(
-  'ctrl+s',
-  (event:any) => {
-    event.preventDefault();
-    console.log('Sauvegarde via Ctrl+S');
-    if (selectedNote) {
-      handleSave();
+  // ====== RACCOURCIS ======
+  // sauvegarder une note
+  useHotkeys(
+    'ctrl+s',
+    (event:any) => {
+      event.preventDefault();
+      console.log('Sauvegarde via Ctrl+S');
+      if (selectedNote) {
+        handleSave();
+      }
+    },
+    {
+      enableOnFormTags: true, 
     }
-  },
-  {
-    enableOnFormTags: true, // <— indispensable pour textarea / input
-  }
-);
+  );
 
 
   useEffect(() => {
