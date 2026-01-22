@@ -9,6 +9,7 @@ import { ConfirmModal } from '../components/ConfirmModal.js';
 import { ModeSwitch } from '../components/ModeSwitch.js';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../../services/AuthService.js';
+import { useHotkeys } from "react-hotkeys-hook";
 
 export function NotesLayout() {
   const {
@@ -41,6 +42,22 @@ export function NotesLayout() {
   const [noteToDelete, setNoteToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const navigate = useNavigate();
+
+  // raccourcis
+useHotkeys(
+  'ctrl+s',
+  (event:any) => {
+    event.preventDefault();
+    console.log('Sauvegarde via Ctrl+S');
+    if (selectedNote) {
+      handleSave();
+    }
+  },
+  {
+    enableOnFormTags: true, // <— indispensable pour textarea / input
+  }
+);
+
 
   useEffect(() => {
     if (selectedNote) {
