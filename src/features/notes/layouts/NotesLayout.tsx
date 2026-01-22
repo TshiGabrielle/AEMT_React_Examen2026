@@ -40,6 +40,7 @@ export function NotesLayout() {
   const [createFolderParentId, setCreateFolderParentId] = useState<number | null>(null);
   const [showDeleteNoteModal, setShowDeleteNoteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
@@ -58,7 +59,19 @@ export function NotesLayout() {
       enableOnFormTags: true, 
     }
   );
-
+  // créer une nvl note
+  useHotkeys(
+    'alt+n',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Création d'une nouvelle note via Ctrl+N");
+      handleCreateNote(selectedFolderId);
+    }, 
+    {
+      enableOnFormTags: true,
+      preventDefault: true
+    }
+  );
 
   useEffect(() => {
     if (selectedNote) {
@@ -441,6 +454,7 @@ export function NotesLayout() {
             onDeleteFolder={handleDeleteFolder}
             onDeleteNoteRequest={handleDeleteNoteRequest}
             onExpandFolderRef={handleExpandFolderRef}
+            onFolderSelect={(folderId) => setSelectedFolderId(folderId)}
           />
         )}
 

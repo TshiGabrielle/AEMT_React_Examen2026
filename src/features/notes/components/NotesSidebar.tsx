@@ -21,6 +21,7 @@ interface Props {
   onExpandFolder?: (folderId: number) => void; // Callback pour ouvrir un dossier
   onDeleteNoteRequest?: (id: number, name: string) => void; // Callback pour demander confirmation de suppression
   onExpandFolderRef?: (expandFn: (id: number) => void) => void; // Callback pour exposer la fonction expandFolder
+  onFolderSelect?: (folderId: number) => void; // Callback lors de la sélection d'un dossier
 }
 
 // --- Rendu récursif d'un dossier ---
@@ -37,10 +38,11 @@ interface FolderTreeProps {
   onDeleteFolder?: ((folderId: number) => void) | undefined;
   hoveredFolderId: number | null;
   setHoveredFolderId: (id: number | null) => void;
-  onExpandFolder?: (folderId: number) => void;
+  onExpandFolder: (folderId: number) => void;
   onDeleteNoteRequest?: (id: number, name: string) => void;
   openMenuId?: number | null;
   setOpenMenuId?: (id: number | null) => void;
+  onFolderSelect?: (folderId: number) => void;
 }
 
 function FolderTree({
@@ -59,7 +61,8 @@ function FolderTree({
   onExpandFolder,
   onDeleteNoteRequest,
   openMenuId,
-  setOpenMenuId
+  setOpenMenuId,
+  onFolderSelect
 }: FolderTreeProps) {
   const isExpanded = expandedIds.includes(folder.id);
   const isHovered = hoveredFolderId === folder.id;
@@ -128,7 +131,10 @@ function FolderTree({
     <div className="folder-block">
       <div
         className="folder-title"
-        onClick={() => toggleFolder(folder.id)}
+        onClick={() => {
+          toggleFolder(folder.id)
+          onFolderSelect?.(folder.id);
+        }}
         onMouseEnter={() => setHoveredFolderId(folder.id)}
         onMouseLeave={() => setHoveredFolderId(null)}
         style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -305,7 +311,8 @@ export function NotesSidebar({
   onDeleteFolder,
   onExpandFolder,
   onDeleteNoteRequest,
-  onExpandFolderRef
+  onExpandFolderRef,
+  onFolderSelect
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<number[]>([]);
   const [hoveredFolderId, setHoveredFolderId] = useState<number | null>(null);
@@ -431,6 +438,7 @@ export function NotesSidebar({
                 onDeleteNoteRequest={onDeleteNoteRequest}
                 openMenuId={openMenuId}
                 setOpenMenuId={setOpenMenuId}
+                onFolderSelect={onFolderSelect}
               />
             ))}
           </>
