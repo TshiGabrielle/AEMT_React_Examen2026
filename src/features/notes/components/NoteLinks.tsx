@@ -14,7 +14,8 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
   // Transformer [[Note]] en <a>
   function transformInternalLinks(text: string) {
     return text.replace(/\[\[(.+?)\]\]/g, (_, title) => {
-      return `[${title}](internal:${title})`;
+      return `[${title}](internal:${encodeURIComponent(title)})`;
+
     });
   }
 
@@ -25,7 +26,10 @@ export function NoteLinksRenderer({ content, onInternalLinkClick }: Props) {
       components={{
         a({ href, children }) {
           if (href?.startsWith("internal:")) {
-            const noteTitle = href.replace("internal:", "");
+            const noteTitle = decodeURIComponent(
+                href.replace("internal:", "")
+            );
+
             return (
               <a
                 href="#"
