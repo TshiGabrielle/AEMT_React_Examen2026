@@ -82,7 +82,19 @@ export function NotesLayout() {
       setShowCreateFolderModal(true);
     }
   );
-  
+  // supprimer une note
+  useHotkeys(
+    'ctrl+delete',
+    (event: any) => {
+      event.preventDefault();
+      console.log("Suppression de la note via Ctrl+Delete");
+
+      if (selectedNote) {
+        handleDeleteNoteRequest(selectedNote.id, selectedNote.name);
+      }
+    }
+  );
+
   useEffect(() => {
     if (selectedNote) {
       setTitle(selectedNote.name);
