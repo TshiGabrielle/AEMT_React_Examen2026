@@ -161,6 +161,24 @@ export function NotesLayout() {
     }
     , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
   );
+  // lien externe
+  useHotkeys(
+    'ctrl+k',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "[texte du lien](https://exemple.com)");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
+  // lien interne
+  useHotkeys(
+    'ctrl+shift+k',
+    (event:any) => {
+      event.preventDefault();
+      setContent((prev) => prev + "[texte du lien](/chemin-interne)");
+    }
+    , { enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true, }
+  );
 
   useEffect(() => {
     if (selectedNote) {
